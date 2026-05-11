@@ -72,6 +72,15 @@ export const Section = styled.div`
   position: relative;
 `
 
+export const PrivateTag = styled.span`
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: ${theme.colors.border};
+  letter-spacing: 0.03em;
+  text-transform: none;
+  margin-left: 0.5rem;
+`
+
 export const SectionHeading = styled.p`
   font-size: 0.75rem;
   font-weight: 700;

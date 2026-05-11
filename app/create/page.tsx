@@ -448,7 +448,7 @@ export default function CreatePage() {
           </S.Section>
 
           <S.Section>
-            <S.Label>Contact Details</S.Label>
+            <S.Label>Contact Details <S.PrivateTag>kept private</S.PrivateTag></S.Label>
             <S.Input
               value={form.email}
               onChange={(e) => handleField("email", e.target.value)}
