@@ -33,7 +33,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
 
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
         <Link
-          href="/cards"
+          href="/deck"
           style={{
             padding: "0.7rem 1.5rem",
             border: "1px solid #2e2e42",
