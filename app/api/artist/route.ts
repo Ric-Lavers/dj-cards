@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { connectToDatabase } from "@/db/mongo/connect"
 import ArtistModel from "@/db/mongo/models/artist.schema"
-import InviteModel from "@/db/mongo/models/invite.schema"
 import { generateCardNumber } from "@/utils/generateCardNumber"
 import { ensureBlobUrl } from "@/utils/uploadToBlob"
 import { randomBytes } from "crypto"
 import QRCode from "qrcode"
+import { cookies } from "next/headers"
+import { InviteFlow } from "@/services/InviteFlow"
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"
 
@@ -14,6 +15,11 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const uid = randomBytes(6).toString("hex")
 
+  // Resolve invite from cookie
+  const jar = await cookies()
+  const inviteToken = InviteFlow.getToken(jar)
+  const invite = inviteToken ? await InviteFlow.fromToken(inviteToken) : null
+
   // Upload photos to Blob if still base64
   const [photo, editedPhoto] = await Promise.all([
     ensureBlobUrl(body.photo ?? "", `originals/${uid}-orig.jpg`),
@@ -21,11 +27,19 @@ export async function POST(req: NextRequest) {
   ])
 
   const cardNumber = await generateCardNumber()
-  const artist = await ArtistModel.create({ ...body, photo, editedPhoto, cardNumber })
+  const artist = await ArtistModel.create({
+    ...body,
+    photo,
+    editedPhoto,
+    cardNumber,
+    invitedBy: invite?.invitedBy ?? null,
+  })
 
-  // Create an invite token for this artist so their card QR lets others join
-  const token = randomBytes(16).toString("hex")
-  await InviteModel.create({ token, createdBy: artist._id })
+  // Record this artist against the invite
+  await invite?.record(artist._id)
+
+  // Create this artist's own invite token for their card QR
+  const token = await InviteFlow.create(artist._id)
 
   // Generate QR code pointing to the invite page
   const inviteUrl = `${BASE_URL}/invite/${token}`

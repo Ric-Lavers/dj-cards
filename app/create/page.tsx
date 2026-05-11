@@ -18,16 +18,16 @@ const POSES: { value: PoseChoice; label: string; emoji: string }[] = [
   { value: "natural",       label: "Natural",          emoji: "🪄" },
 ]
 
-const ALL_GENRES = ["House", "Techno", "Drum & Bass", "Jungle", "Disco", "Electro", "Trance", "Ambient", "Hip-Hop", "Funk"]
+const FALLBACK_GENRES = ["House", "Techno", "Drum & Bass", "Jungle", "Disco", "Electro", "Trance", "Ambient", "Hip-Hop", "Funk"]
 
 const ALL_SKILLS: { value: Skill; label: string }[] = [
   { value: "scratching", label: "Scratching" },
   { value: "long_mixes", label: "Long Mixes" },
-  { value: "vinyl", label: "Vinyl" },
-  { value: "cdjs", label: "CDJs" },
-  { value: "ableton", label: "Ableton" },
-  { value: "guitar", label: "Guitar" },
-  { value: "vocalist", label: "Vocalist" },
+  { value: "vinyl",      label: "Vinyl" },
+  { value: "cdjs",       label: "CDJs" },
+  { value: "ableton",    label: "Ableton" },
+  { value: "guitar",     label: "Guitar" },
+  { value: "vocalist",   label: "Vocalist" },
 ]
 
 const defaultForm = {
@@ -41,8 +41,9 @@ const defaultForm = {
   bpm: 128,
   danceabilityScale: 50,
   skills: [] as Skill[],
-  email: "",
   instagram: "",
+  soundcloud: "",
+  email: "",
   address: "",
 }
 
@@ -55,9 +56,59 @@ export default function CreatePage() {
   const [processingPhoto, s_processingPhoto] = useState(false)
   const [photoError, s_photoError] = useState<string | null>(null)
   const [loading, s_loading] = useState(false)
+  const [genres, s_genres] = useState<string[]>(FALLBACK_GENRES)
+  const [genresExpanded, s_genresExpanded] = useState(false)
+  const [genresOverflow, s_genresOverflow] = useState(false)
+  const [newGenre, s_newGenre] = useState("")
+  const [addingGenre, s_addingGenre] = useState(false)
+  const [newSkill, s_newSkill] = useState("")
+  const chipsRef = useRef<HTMLDivElement>(null)
   const [sheetOpen, s_sheetOpen] = useState(false)
   const [showPeek, s_showPeek] = useState(false)
   const inlinePreviewRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    api.get("/genres").then((data) => s_genres(data as unknown as string[])).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    const el = chipsRef.current
+    if (!el) return
+    const check = () => s_genresOverflow(el.scrollHeight > 80)
+    check()
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [genres])
+
+  async function handleAddGenre() {
+    const trimmed = newGenre.trim().replace(/\b\w/g, (c) => c.toUpperCase())
+    if (!trimmed) return
+    // Dupe check client-side before hitting API
+    const existing = genres.find((g) => g.toLowerCase() === trimmed.toLowerCase())
+    if (existing) { toggleGenre(existing); s_newGenre(""); return }
+    s_addingGenre(true)
+    try {
+      const name = await api.post("/genres", { name: trimmed }) as unknown as string
+      s_genres((prev) => prev.includes(name) ? prev : [...prev, name])
+      toggleGenre(name)
+      s_newGenre("")
+    } finally {
+      s_addingGenre(false)
+    }
+  }
+
+  function handleAddSkill() {
+    const trimmed = newSkill.trim().replace(/\b\w/g, (c) => c.toUpperCase())
+    if (!trimmed) return
+    const key = trimmed.toLowerCase().replace(/\s+/g, "_")
+    // Dupe check against preset keys and already-added custom skills
+    const allKeys = [...ALL_SKILLS.map((s) => s.value), ...form.skills]
+    const duplicate = allKeys.some((s) => s.toLowerCase() === key || s.toLowerCase() === trimmed.toLowerCase())
+    if (duplicate) { s_newSkill(""); return }
+    s_form((prev) => ({ ...prev, skills: [...prev.skills, trimmed as Skill] }))
+    s_newSkill("")
+  }
 
   useEffect(() => {
     const el = inlinePreviewRef.current
@@ -167,7 +218,8 @@ export default function CreatePage() {
           danceabilityScale: form.danceabilityScale,
         },
         skills: form.skills,
-        contactDetails: { email: form.email, instagram: form.instagram, address: form.address },
+        socials: { instagram: form.instagram, soundcloud: form.soundcloud },
+        contactDetails: { email: form.email, address: form.address },
       }
       const artist = await api.post("/artist", payload)
       // @ts-ignore
@@ -182,6 +234,7 @@ export default function CreatePage() {
     genres: form.genres as [string, string],
     poseChoice: form.poseChoice,
     skills: form.skills,
+    socials: { instagram: form.instagram, soundcloud: form.soundcloud },
     stats: {
       yearsPlaying: form.yearsPlaying,
       tracksUploaded: form.tracksUploaded,
@@ -266,19 +319,37 @@ export default function CreatePage() {
 
           <S.Section>
             <S.Label>Genres (pick 2)</S.Label>
-            <S.ChipGroup>
-              {ALL_GENRES.map((genre) => (
-                <S.Chip
-                  key={genre}
-                  $active={form.genres.includes(genre)}
-                  $disabled={!form.genres.includes(genre) && form.genres.length >= 2}
-                  onClick={() => toggleGenre(genre)}
-                  type="button"
-                >
-                  {genre}
-                </S.Chip>
-              ))}
-            </S.ChipGroup>
+            <S.ChipGroupWrapper>
+              <S.ChipGroup ref={chipsRef} $collapsed={!genresExpanded && genresOverflow}>
+                {genres.map((genre) => (
+                  <S.Chip
+                    key={genre}
+                    $active={form.genres.includes(genre)}
+                    $disabled={!form.genres.includes(genre) && form.genres.length >= 2}
+                    onClick={() => toggleGenre(genre)}
+                    type="button"
+                  >
+                    {genre}
+                  </S.Chip>
+                ))}
+              </S.ChipGroup>
+              {genresOverflow && (
+                <S.ShowMoreButton type="button" onClick={() => s_genresExpanded(v => !v)}>
+                  {genresExpanded ? "Show less ↑" : `Show more ↓`}
+                </S.ShowMoreButton>
+              )}
+            </S.ChipGroupWrapper>
+            <S.AddGenreRow>
+              <S.AddGenreInput
+                value={newGenre}
+                onChange={(e) => s_newGenre(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddGenre() } }}
+                placeholder="Add a genre..."
+              />
+              <S.AddGenreBtn type="button" onClick={handleAddGenre} disabled={!newGenre.trim() || addingGenre}>
+                {addingGenre ? "..." : "+ Add"}
+              </S.AddGenreBtn>
+            </S.AddGenreRow>
           </S.Section>
 
           <S.Section>
@@ -286,7 +357,7 @@ export default function CreatePage() {
             <S.StatGrid>
               {[
                 { key: "yearsPlaying" as const, label: "Years Playing" },
-                { key: "tracksUploaded" as const, label: "Tracks Uploaded" },
+                { key: "tracksUploaded" as const, label: "Uploads" },
                 { key: "totalFollowers" as const, label: "Total Followers" },
                 { key: "bpm" as const, label: "Favourite BPM" },
               ].map(({ key, label }) => (
@@ -296,6 +367,7 @@ export default function CreatePage() {
                     type="number"
                     value={form[key]}
                     onChange={(e) => handleField(key, Number(e.target.value))}
+                    onFocus={(e) => e.target.select()}
                     min={0}
                   />
                 </S.StatField>
@@ -332,7 +404,47 @@ export default function CreatePage() {
                   {label}
                 </S.Chip>
               ))}
+              {/* Custom skills */}
+              {form.skills
+                .filter((s) => !ALL_SKILLS.find((p) => p.value === s))
+                .map((s) => (
+                  <S.Chip
+                    key={s}
+                    $active
+                    $disabled={false}
+                    onClick={() => s_form((prev) => ({ ...prev, skills: prev.skills.filter((x) => x !== s) }))}
+                    type="button"
+                  >
+                    {s}
+                  </S.Chip>
+                ))}
             </S.ChipGroup>
+            <S.AddGenreRow>
+              <S.AddGenreInput
+                value={newSkill}
+                onChange={(e) => s_newSkill(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddSkill() } }}
+                placeholder="Add a skill..."
+              />
+              <S.AddGenreBtn type="button" onClick={handleAddSkill} disabled={!newSkill.trim()}>
+                + Add
+              </S.AddGenreBtn>
+            </S.AddGenreRow>
+          </S.Section>
+
+          <S.Section>
+            <S.Label>Socials</S.Label>
+            <S.Input
+              value={form.instagram}
+              onChange={(e) => handleField("instagram", e.target.value)}
+              placeholder="Instagram @handle"
+            />
+            <S.Input
+              value={form.soundcloud}
+              onChange={(e) => handleField("soundcloud", e.target.value)}
+              placeholder="SoundCloud @handle"
+              style={{ marginTop: "0.5rem" }}
+            />
           </S.Section>
 
           <S.Section>
@@ -343,17 +455,12 @@ export default function CreatePage() {
               placeholder="Email"
               type="email"
             />
-            <S.Input
-              value={form.instagram}
-              onChange={(e) => handleField("instagram", e.target.value)}
-              placeholder="@instagram"
-              style={{ marginTop: "0.5rem" }}
-            />
             <S.Textarea
               value={form.address}
               onChange={(e) => handleField("address", e.target.value)}
               placeholder="Postal address (for physical card delivery)"
               rows={3}
+              style={{ marginTop: "0.5rem" }}
             />
           </S.Section>
 

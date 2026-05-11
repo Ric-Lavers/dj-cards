@@ -1,19 +1,22 @@
-import { connectToDatabase } from "@/db/mongo/connect"
-import InviteModel from "@/db/mongo/models/invite.schema"
+import { InviteFlow } from "@/services/InviteFlow"
+import { cookies } from "next/headers"
 import Link from "next/link"
 
 export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
-  await connectToDatabase()
-  const invite = await InviteModel.findOne({ token }).lean()
-  const valid = !!invite && !invite.usedAt
+  const invite = await InviteFlow.fromToken(token)
+
+  if (invite.valid) {
+    const jar = await cookies()
+    InviteFlow.setCookie(token, jar)
+  }
 
   return (
     <main style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
       <h1 style={{ fontSize: "2rem", fontWeight: 900, marginBottom: "1rem" }}>
-        {valid ? "You've been invited" : "Invalid invite"}
+        {invite.valid ? "You've been invited" : "Invalid invite"}
       </h1>
-      {valid && (
+      {invite.valid && (
         <>
           <p style={{ color: "#6b6b80", marginBottom: "2rem" }}>
             Create your DJ card and join the deck.

@@ -20,11 +20,15 @@ export interface ArtistDoc extends Document {
   skills: Skill[]
   cardNumber: number
   qrCodeUrl: string
+  socials: {
+    instagram: string
+    soundcloud: string
+  }
   contactDetails: {
     email: string
-    instagram: string
     address: string
   }
+  invitedBy: Types.ObjectId | null
   team: Types.ObjectId
 }
 
@@ -50,11 +54,15 @@ const ArtistSchema = new Schema<ArtistDoc>(
     skills: [{ type: String }],
     cardNumber: { type: Number },
     qrCodeUrl: { type: String, default: "" },
+    socials: {
+      instagram: { type: String, default: "" },
+      soundcloud: { type: String, default: "" },
+    },
     contactDetails: {
       email: { type: String, default: "" },
-      instagram: { type: String, default: "" },
       address: { type: String, default: "" },
     },
+    invitedBy: { type: Schema.Types.ObjectId, ref: "Artist", default: null },
     team: { type: Schema.Types.ObjectId, ref: "Team" },
   },
   { timestamps: true }

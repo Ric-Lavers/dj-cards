@@ -164,10 +164,67 @@ export const CustomPoseInput = styled.input`
   }
 `
 
-export const ChipGroup = styled.div`
+export const ChipGroupWrapper = styled.div`
+  position: relative;
+`
+
+export const ChipGroup = styled.div<{ $collapsed?: boolean }>`
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
+  overflow: hidden;
+  ${({ $collapsed }) => $collapsed && `max-height: 72px;`}
+`
+
+export const ShowMoreButton = styled.button`
+  margin-top: 0.4rem;
+  background: none;
+  border: none;
+  color: ${theme.colors.muted};
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: 0.03em;
+
+  &:hover { color: ${theme.colors.white}; }
+`
+
+export const AddGenreRow = styled.div`
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  align-items: center;
+`
+
+export const AddGenreInput = styled.input`
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed ${theme.colors.border};
+  color: ${theme.colors.white};
+  font-size: 0.85rem;
+  font-family: ${theme.fonts.body};
+  padding: 0.25rem 0;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &::placeholder { color: ${theme.colors.border}; }
+  &:focus { border-bottom-color: ${theme.colors.gold}; }
+`
+
+export const AddGenreBtn = styled.button`
+  background: none;
+  border: 1px solid ${theme.colors.border};
+  color: ${theme.colors.muted};
+  border-radius: 4px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+
+  &:hover { border-color: ${theme.colors.gold}; color: ${theme.colors.gold}; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
 `
 
 export const Chip = styled.button<{ $active: boolean; $disabled: boolean }>`

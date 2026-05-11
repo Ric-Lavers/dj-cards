@@ -7,14 +7,18 @@ const { width, height, borderRadius } = theme.card
 const W = width
 const H = height
 
-const SKILL_LABELS: Record<Skill, string> = {
+const SKILL_LABELS: Record<string, string> = {
   scratching: "Scratch",
   long_mixes: "Long Mix",
-  vinyl: "Vinyl",
-  cdjs: "CDJs",
-  ableton: "Ableton",
-  guitar: "Guitar",
-  vocalist: "Vocalist",
+  vinyl:      "Vinyl",
+  cdjs:       "CDJs",
+  ableton:    "Ableton",
+  guitar:     "Guitar",
+  vocalist:   "Vocalist",
+}
+
+function skillLabel(skill: string) {
+  return SKILL_LABELS[skill] ?? skill
 }
 
 // Deterministic pseudo-waveform bars from a seed string
@@ -34,9 +38,12 @@ interface Props {
 }
 
 export const CardBack = ({ artist, qrDataUrl }: Props) => {
-  const { djName, stats, genres, skills, cardNumber } = artist
+  const { djName, stats, genres, skills, cardNumber, socials } = artist
+  const instagram = socials?.instagram?.replace(/^@/, "")
+  const soundcloud = socials?.soundcloud?.replace(/^@/, "")
   const bars = waveformBars(djName || "DJ", 28, 22)
 
+  
   return (
     <svg
       width={W}
@@ -155,25 +162,30 @@ export const CardBack = ({ artist, qrDataUrl }: Props) => {
 
         {/* ── Stats grid ── */}
         {[
-          ["YRS PLAYING", stats?.yearsPlaying ?? "—"],
-          ["TRACKS", stats?.tracksUploaded ?? "—"],
+          ["YEARS PLAYING", stats?.yearsPlaying ?? "—"],
+          ["UPLOADS", stats?.tracksUploaded ?? "—"],
           ["FOLLOWERS", stats?.totalFollowers ?? "—"],
-        ].map(([label, value], i) => (
-          <g key={String(label)} transform={`translate(22, ${74 + i * 36})`}>
-            <text fontFamily={theme.fonts.mono} fontSize={8} fill={theme.colors.muted} letterSpacing="1" y={0}>
-              {label}
-            </text>
-            <text
-              fontFamily={theme.fonts.heading}
-              fontSize={18}
-              fontWeight="700"
-              fill={theme.colors.white}
-              y={17}
-            >
-              {String(value)}
-            </text>
-          </g>
-        ))}
+        ].map(([label, value], i) => {
+          const isEmpty = (value === 0 || value === "0") && label !== "YEARS PLAYING"
+          return (
+            <g key={String(label)} transform={`translate(22, ${74 + i * 36})`}>
+              <text fontFamily={theme.fonts.mono} fontSize={8} fill={theme.colors.muted} letterSpacing="1" y={0}
+                visibility={isEmpty && label !== "YEARS PLAYING" ? "hidden" : "visible"}>
+                {label}
+              </text>
+              <text
+                fontFamily={theme.fonts.heading}
+                fontSize={18}
+                fontWeight="700"
+                fill={theme.colors.white}
+                y={17}
+                visibility={isEmpty ? "hidden" : "visible"}
+              >
+                {String(value)}
+              </text>
+            </g>
+          )
+        })}
 
         {/* ── Section divider ── */}
         <line x1={12} y1={185} x2={W} y2={185} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
@@ -222,25 +234,27 @@ export const CardBack = ({ artist, qrDataUrl }: Props) => {
 
         {/* ── Skills ── */}
         <line x1={12} y1={260} x2={W} y2={260} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
-        {(skills ?? []).slice(0, 6).map((skill, i) => {
-          const col = i % 3
-          const row = Math.floor(i / 3)
+        {(skills ?? []).slice(0, 8).map((skill, i) => {
+          const col = i % 4
+          const row = Math.floor(i / 4)
+          const label = skillLabel(skill)
+          const x = 18 + col * 80
+          const y = 268 + row * 28
           return (
-            <g key={skill} transform={`translate(${22 + col * 108}, ${266 + row * 28})`}>
-              <rect width={98} height={22} rx={4} fill={theme.colors.surface} />
-              {/* Left accent bar */}
+            <g key={skill} transform={`translate(${x}, ${y})`}>
+              <rect width={72} height={22} rx={4} fill={theme.colors.surface} />
               <rect width={3} height={22} rx={1.5} fill="#7c3aed" opacity="0.7" />
               <text
-                x={52}
+                x={40}
                 y={11}
                 fontFamily={theme.fonts.mono}
-                fontSize={8}
+                fontSize={7.5}
                 fill={theme.colors.white}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                letterSpacing="0.5"
+                letterSpacing="0.3"
               >
-                {SKILL_LABELS[skill as Skill] ?? skill}
+                {label.toUpperCase()}
               </text>
             </g>
           )
@@ -278,6 +292,18 @@ export const CardBack = ({ artist, qrDataUrl }: Props) => {
             rx={1}
           />
         ))}
+
+        {/* ── Socials ── */}
+        {instagram && (
+          <text x={22} y={H - 42} fontFamily={theme.fonts.mono} fontSize={8} fill={theme.colors.gold} letterSpacing="0.5">
+            ig: @{instagram}
+          </text>
+        )}
+        {soundcloud && (
+          <text x={22} y={H - 30} fontFamily={theme.fonts.mono} fontSize={8} fill={theme.colors.gold} letterSpacing="0.5">
+            sc: @{soundcloud}
+          </text>
+        )}
 
         {/* ── Card number ── */}
         <text
