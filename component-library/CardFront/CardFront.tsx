@@ -25,9 +25,11 @@ interface Props {
   djName: string
   editedPhoto?: string
   cardNumber?: number
+  instanceId?: string
 }
 
-export const CardFront = ({ djName, editedPhoto, cardNumber }: Props) => {
+export const CardFront = ({ djName, editedPhoto, cardNumber, instanceId }: Props) => {
+  const uid = instanceId ? `-${instanceId}` : ""
   const rays = sunburstPaths(W * 0.52, H * 0.42, 24, 700)
 
   return (
@@ -39,50 +41,50 @@ export const CardFront = ({ djName, editedPhoto, cardNumber }: Props) => {
       style={{ display: "block" }}
     >
       <defs>
-        <clipPath id="front-card-clip">
+        <clipPath id={`front-card-clip${uid}`}>
           <rect width={W} height={H} rx={borderRadius} ry={borderRadius} />
         </clipPath>
-        <clipPath id="front-photo-clip">
+        <clipPath id={`front-photo-clip${uid}`}>
           <rect x={12} y={12} width={W - 24} height={H - 100} rx={8} ry={8} />
         </clipPath>
 
         {/* Background radial glow */}
-        <radialGradient id="front-bg-glow" cx="52%" cy="42%" r="60%">
+        <radialGradient id={`front-bg-glow${uid}`} cx="52%" cy="42%" r="60%">
           <stop offset="0%" stopColor="#2d0060" stopOpacity="0.9" />
           <stop offset="60%" stopColor="#0d0020" stopOpacity="1" />
           <stop offset="100%" stopColor="#0a0008" stopOpacity="1" />
         </radialGradient>
 
         {/* Photo bottom fade */}
-        <linearGradient id="front-photo-fade" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`front-photo-fade${uid}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="55%" stopColor="transparent" />
           <stop offset="100%" stopColor="#0a0008" />
         </linearGradient>
 
         {/* Name bar gradient */}
-        <linearGradient id="front-name-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id={`front-name-grad${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#1a0a2e" />
           <stop offset="100%" stopColor="#0a0008" />
         </linearGradient>
 
         {/* Side banner */}
-        <linearGradient id="front-banner-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <linearGradient id={`front-banner-grad${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#c9a84c" />
           <stop offset="50%" stopColor="#7c3aed" />
           <stop offset="100%" stopColor="#c9a84c" />
         </linearGradient>
 
         {/* Diagonal slash gradient */}
-        <linearGradient id="front-slash-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id={`front-slash-grad${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.8" />
           <stop offset="100%" stopColor="#c9a84c" stopOpacity="0.6" />
         </linearGradient>
       </defs>
 
       {/* ── Layer 1: background ── */}
-      <g clipPath="url(#front-card-clip)">
+      <g clipPath={`url(#front-card-clip${uid})`}>
         <rect width={W} height={H} fill="#0a0008" />
-        <rect width={W} height={H} fill="url(#front-bg-glow)" />
+        <rect width={W} height={H} fill={`url(#front-bg-glow${uid})`} />
 
         {/* ── Layer 2: sunburst rays ── */}
         {rays.map((d, i) => (
@@ -98,30 +100,30 @@ export const CardFront = ({ djName, editedPhoto, cardNumber }: Props) => {
             width={W - 24}
             height={H - 100}
             preserveAspectRatio="xMidYMid slice"
-            clipPath="url(#front-photo-clip)"
+            clipPath={`url(#front-photo-clip${uid})`}
           />
         ) : (
           <rect x={12} y={12} width={W - 24} height={H - 100} rx={8} fill="#1a0a2e" />
         )}
 
         {/* ── Layer 4: photo fade into name bar ── */}
-        <rect x={0} y={H - 200} width={W} height={200} fill="url(#front-photo-fade)" />
+        <rect x={0} y={H - 200} width={W} height={200} fill={`url(#front-photo-fade${uid})`} />
 
         {/* ── Layer 5: diagonal slash accent ── */}
         <polygon
           points={`0,${H - 110}  ${W * 0.65},${H - 110}  ${W * 0.75},${H - 88}  0,${H - 88}`}
-          fill="url(#front-slash-grad)"
+          fill={`url(#front-slash-grad${uid})`}
           opacity="0.7"
         />
 
         {/* ── Layer 6: name bar ── */}
-        <rect x={0} y={H - 88} width={W} height={88} fill="url(#front-name-grad)" />
+        <rect x={0} y={H - 88} width={W} height={88} fill={`url(#front-name-grad${uid})`} />
 
         {/* Gold top separator line */}
         <line x1={0} y1={H - 88} x2={W} y2={H - 88} stroke={theme.colors.gold} strokeWidth={1.5} />
 
         {/* ── Layer 7: side banner ── */}
-        <rect x={0} y={0} width={12} height={H} fill="url(#front-banner-grad)" />
+        <rect x={0} y={0} width={12} height={H} fill={`url(#front-banner-grad${uid})`} />
         {/* Banner inner highlight */}
         <rect x={11} y={0} width={1} height={H} fill={theme.colors.gold} opacity="0.4" />
 

@@ -35,9 +35,11 @@ function waveformBars(seed: string, count: number, maxH: number) {
 interface Props {
   artist: Partial<ArtistDoc>
   qrDataUrl?: string
+  instanceId?: string
 }
 
-export const CardBack = ({ artist, qrDataUrl }: Props) => {
+export const CardBack = ({ artist, qrDataUrl, instanceId }: Props) => {
+  const uid = instanceId ? `-${instanceId}` : ""
   const { djName, stats, genres, skills, cardNumber, socials } = artist
   const instagram = socials?.instagram?.replace(/^@/, "")
   const soundcloud = socials?.soundcloud?.replace(/^@/, "")
@@ -53,43 +55,43 @@ export const CardBack = ({ artist, qrDataUrl }: Props) => {
       style={{ display: "block" }}
     >
       <defs>
-        <clipPath id="back-card-clip">
+        <clipPath id={`back-card-clip${uid}`}>
           <rect width={W} height={H} rx={borderRadius} ry={borderRadius} />
         </clipPath>
 
         {/* Diagonal stripe pattern */}
-        <pattern id="back-stripes" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <pattern id={`back-stripes${uid}`} x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <rect width="20" height="20" fill="#0a0008" />
           <rect width="2" height="20" fill="#1a0a2e" opacity="0.8" />
         </pattern>
 
-        <linearGradient id="back-banner-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <linearGradient id={`back-banner-grad${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#c9a84c" />
           <stop offset="50%" stopColor="#7c3aed" />
           <stop offset="100%" stopColor="#c9a84c" />
         </linearGradient>
 
-        <linearGradient id="back-header-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id={`back-header-grad${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#1a0a2e" />
           <stop offset="100%" stopColor="#0a0008" />
         </linearGradient>
 
-        <linearGradient id="back-slash-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id={`back-slash-grad${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.6" />
           <stop offset="100%" stopColor="#c9a84c" stopOpacity="0.3" />
         </linearGradient>
 
-        <radialGradient id="back-corner-glow" cx="100%" cy="0%" r="50%">
+        <radialGradient id={`back-corner-glow${uid}`} cx="100%" cy="0%" r="50%">
           <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.25" />
           <stop offset="100%" stopColor="transparent" />
         </radialGradient>
       </defs>
 
-      <g clipPath="url(#back-card-clip)">
+      <g clipPath={`url(#back-card-clip${uid})`}>
         {/* ── Background ── */}
         <rect width={W} height={H} fill="#0a0008" />
-        <rect width={W} height={H} fill="url(#back-stripes)" />
-        <rect width={W} height={H} fill="url(#back-corner-glow)" />
+        <rect width={W} height={H} fill={`url(#back-stripes${uid})`} />
+        <rect width={W} height={H} fill={`url(#back-corner-glow${uid})`} />
 
         {/* ── Waveform decoration (top area, behind header) ── */}
         {bars.map((barH, i) => (
@@ -108,15 +110,15 @@ export const CardBack = ({ artist, qrDataUrl }: Props) => {
         {/* ── Header diagonal slash ── */}
         <polygon
           points={`12,0  ${W},0  ${W},58  12,58`}
-          fill="url(#back-header-grad)"
+          fill={`url(#back-header-grad${uid})`}
         />
         <polygon
           points={`12,54  ${W * 0.7},54  ${W * 0.8},62  12,62`}
-          fill="url(#back-slash-grad)"
+          fill={`url(#back-slash-grad${uid})`}
         />
 
         {/* ── Side banner ── */}
-        <rect x={0} y={0} width={12} height={H} fill="url(#back-banner-grad)" />
+        <rect x={0} y={0} width={12} height={H} fill={`url(#back-banner-grad${uid})`} />
         <rect x={11} y={0} width={1} height={H} fill={theme.colors.gold} opacity="0.4" />
 
         {/* ── DJ Name header ── */}
@@ -202,7 +204,7 @@ export const CardBack = ({ artist, qrDataUrl }: Props) => {
           width={((stats?.danceabilityScale ?? 50) / 100) * (W - 44)}
           height={5}
           rx={2.5}
-          fill="url(#back-slash-grad)"
+          fill={`url(#back-slash-grad${uid})`}
         />
         {/* Thumb */}
         <circle
