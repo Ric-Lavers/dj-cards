@@ -26,6 +26,7 @@ export interface ArtistDoc extends Document {
   }
   contactDetails: {
     email: string
+    phone?: string
     address: string
   }
   invitedBy: Types.ObjectId | null
@@ -60,6 +61,7 @@ const ArtistSchema = new Schema<ArtistDoc>(
     },
     contactDetails: {
       email: { type: String, default: "" },
+      phone: { type: String, default: "" },
       address: { type: String, default: "" },
     },
     invitedBy: { type: Schema.Types.ObjectId, ref: "Artist", default: null },

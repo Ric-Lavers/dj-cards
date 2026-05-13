@@ -44,6 +44,7 @@ const defaultForm = {
   instagram: "",
   soundcloud: "",
   email: "",
+  phone: "",
   address: "",
 }
 
@@ -221,7 +222,7 @@ export default function CreatePage() {
         },
         skills: form.skills,
         socials: { instagram: form.instagram, soundcloud: form.soundcloud },
-        contactDetails: { email: form.email, address: form.address },
+        contactDetails: { email: form.email, phone: form.phone, address: form.address },
       }
       const artist = await api.post("/artist", payload)
       // @ts-ignore
@@ -458,6 +459,13 @@ export default function CreatePage() {
               onChange={(e) => handleField("email", e.target.value)}
               placeholder="Email"
               type="email"
+            />
+            <S.Input
+              value={form.phone}
+              onChange={(e) => handleField("phone", e.target.value)}
+              placeholder="Phone number"
+              type="tel"
+              style={{ marginTop: "0.5rem" }}
             />
             <S.Textarea
               value={form.address}
