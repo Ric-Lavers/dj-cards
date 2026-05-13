@@ -289,6 +289,13 @@ export const SubmitButton = styled.button`
   }
 `
 
+export const SubmitError = styled.p`
+  color: #f87171;
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+`
+
 export const PreviewCol = styled.div`
   @media screen and (width < ${theme.breakpoints.lg}) {
     display: none;

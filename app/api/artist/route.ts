@@ -11,50 +11,56 @@ import { InviteFlow } from "@/services/InviteFlow"
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"
 
 export async function POST(req: NextRequest) {
-  await connectToDatabase()
-  const body = await req.json()
-  const uid = randomBytes(6).toString("hex")
+  try {
+    await connectToDatabase()
+    const body = await req.json()
+    const uid = randomBytes(6).toString("hex")
 
-  // Resolve invite from cookie
-  const jar = await cookies()
-  const inviteToken = InviteFlow.getToken(jar)
-  const invite = inviteToken ? await InviteFlow.fromToken(inviteToken) : null
+    // Resolve invite from cookie
+    const jar = await cookies()
+    const inviteToken = InviteFlow.getToken(jar)
+    const invite = inviteToken ? await InviteFlow.fromToken(inviteToken) : null
 
-  // Upload photos to Blob if still base64
-  const [photo, editedPhoto] = await Promise.all([
-    ensureBlobUrl(body.photo ?? "", `originals/${uid}-orig.jpg`),
-    ensureBlobUrl(body.editedPhoto ?? "", `edited/${uid}-edited.png`),
-  ])
+    // Upload photos to Blob if still base64
+    const [photo, editedPhoto] = await Promise.all([
+      ensureBlobUrl(body.photo ?? "", `originals/${uid}-orig.jpg`),
+      ensureBlobUrl(body.editedPhoto ?? "", `edited/${uid}-edited.png`),
+    ])
 
-  const cardNumber = await generateCardNumber()
-  const artist = await ArtistModel.create({
-    ...body,
-    photo,
-    editedPhoto,
-    cardNumber,
-    invitedBy: invite?.invitedBy ?? null,
-  })
+    const cardNumber = await generateCardNumber()
+    const artist = await ArtistModel.create({
+      ...body,
+      photo,
+      editedPhoto,
+      cardNumber,
+      invitedBy: invite?.invitedBy ?? null,
+    })
 
-  // Record this artist against the invite
-  await invite?.record(artist._id)
+    // Record this artist against the invite
+    await invite?.record(artist._id)
 
-  // Create this artist's own invite token for their card QR
-  const token = await InviteFlow.create(artist._id)
+    // Create this artist's own invite token for their card QR
+    const token = await InviteFlow.create(artist._id)
 
-  // Generate QR code pointing to the invite page
-  const inviteUrl = `${BASE_URL}/invite/${token}`
-  const qrCodeUrl = await QRCode.toDataURL(inviteUrl, {
-    width: 200,
-    margin: 1,
-    color: { dark: "#0a0008", light: "#ffffff" },
-  })
+    // Generate QR code pointing to the invite page
+    const inviteUrl = `${BASE_URL}/invite/${token}`
+    const qrCodeUrl = await QRCode.toDataURL(inviteUrl, {
+      width: 200,
+      margin: 1,
+      color: { dark: "#0a0008", light: "#ffffff" },
+    })
 
-  await ArtistModel.findByIdAndUpdate(artist._id, { qrCodeUrl })
+    await ArtistModel.findByIdAndUpdate(artist._id, { qrCodeUrl })
 
-  const result = artist.toObject()
-  result.qrCodeUrl = qrCodeUrl
+    const result = artist.toObject()
+    result.qrCodeUrl = qrCodeUrl
 
-  return NextResponse.json(JSON.parse(JSON.stringify(result)), { status: 201 })
+    return NextResponse.json(JSON.parse(JSON.stringify(result)), { status: 201 })
+  } catch (err) {
+    console.error("[POST /api/artist]", err)
+    const message = err instanceof Error ? err.message : "Internal server error"
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }
 
 export async function GET(req: NextRequest) {

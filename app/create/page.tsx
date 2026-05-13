@@ -56,6 +56,7 @@ export default function CreatePage() {
   const [processingPhoto, s_processingPhoto] = useState(false)
   const [photoError, s_photoError] = useState<string | null>(null)
   const [loading, s_loading] = useState(false)
+  const [submitError, s_submitError] = useState<string | null>(null)
   const [genres, s_genres] = useState<string[]>(FALLBACK_GENRES)
   const [genresExpanded, s_genresExpanded] = useState(false)
   const [genresOverflow, s_genresOverflow] = useState(false)
@@ -202,6 +203,7 @@ export default function CreatePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     s_loading(true)
+    s_submitError(null)
     try {
       const payload = {
         djName: form.djName,
@@ -224,6 +226,8 @@ export default function CreatePage() {
       const artist = await api.post("/artist", payload)
       // @ts-ignore
       router.push(`/card/${artist._id}`)
+    } catch (err: any) {
+      s_submitError(err?.response?.data?.error ?? err?.message ?? "Something went wrong")
     } finally {
       s_loading(false)
     }
@@ -471,6 +475,7 @@ export default function CreatePage() {
             </S.InlinePreviewScaler>
           </S.MobileInlinePreview>
 
+          {submitError && <S.SubmitError>{submitError}</S.SubmitError>}
           <S.SubmitButton type="submit" disabled={loading}>
             {loading ? "Generating..." : "Generate Card"}
           </S.SubmitButton>
