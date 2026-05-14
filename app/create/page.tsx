@@ -146,8 +146,8 @@ export default function CreatePage() {
   }
 
   function loadFile(file: File) {
-    if (file.size > 20 * 1024 * 1024) {
-      s_photoError("That photo is too large — please use an image under 20 MB.")
+    if (file.size > 4 * 1024 * 1024) {
+      s_photoError("That photo is too large — please use an image under 4 MB.")
       return
     }
     s_photoFile(file)

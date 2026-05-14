@@ -3,16 +3,15 @@ import { processArtistPhoto } from "@/services/ai/processArtistPhoto"
 import type { PoseChoice } from "@/db/mongo/models/artist.schema"
 
 export async function POST(req: NextRequest) {
-  const formData = await req.formData()
-  const file = formData.get("photo") as File | null
-  const pose = (formData.get("pose") as PoseChoice) ?? "headphone_grab"
-  const customPose = formData.get("customPose") as string | null
-
-  if (!file) return NextResponse.json({ error: "No photo provided" }, { status: 400 })
-
-  const buffer = Buffer.from(await file.arrayBuffer())
-
   try {
+    const formData = await req.formData()
+    const file = formData.get("photo") as File | null
+    const pose = (formData.get("pose") as PoseChoice) ?? "headphone_grab"
+    const customPose = formData.get("customPose") as string | null
+
+    if (!file) return NextResponse.json({ error: "No photo provided" }, { status: 400 })
+
+    const buffer = Buffer.from(await file.arrayBuffer())
     const editedBuffer = await processArtistPhoto(buffer, file.type || "image/jpeg", pose, customPose ?? undefined)
     const b64 = `data:image/png;base64,${editedBuffer.toString("base64")}`
     return NextResponse.json({ url: b64 })
@@ -26,7 +25,7 @@ export async function POST(req: NextRequest) {
     const status = err?.status ?? err?.response?.status
     if (status === 413 || status === 403 || err?.message?.toLowerCase().includes("too large")) {
       return NextResponse.json(
-        { error: "Your photo is too large for AI processing. Please use a smaller image (under 20 MB)." },
+        { error: "Your photo is too large — please use an image under 4 MB." },
         { status: 413 }
       )
     }
