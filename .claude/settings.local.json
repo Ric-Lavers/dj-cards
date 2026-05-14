@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(rsync *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(pkill -f \"next dev\")",
+      "mcp__playwright__browser_file_upload",
+      "mcp__playwright__browser_navigate",
+      "Bash(vercel --version)",
+      "Bash(npm list *)",
+      "mcp__playwright__browser_take_screenshot"
+    ]
+  }
+}
