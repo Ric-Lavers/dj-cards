@@ -16,6 +16,7 @@ const POSE_PROMPTS: Record<PoseChoice, string> = {
 // Used for preset poses — preserves identity strictly, changes pose + lighting only
 const PRESET_STYLE_PROMPT = `Relight and recompose this photo as a dramatic DJ collectible card portrait.
 - Preserve the person's face, skin tone, and identity exactly — do not alter their features.
+- Minimise crow's feet around the eyes.
 - Remove the background and replace with a deep near-black void (#0a0008).
 - Strong rim lighting in electric purple or deep gold behind the subject.
 - Subtle cold-blue/violet atmospheric haze for depth. Soft directional key light, slight warmth.
