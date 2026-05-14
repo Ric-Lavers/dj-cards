@@ -123,8 +123,6 @@ export default function CreatePage() {
     return () => observer.disconnect()
   }, [])
 
-  const customPoseDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
-
   function handleField<K extends keyof typeof defaultForm>(key: K, value: typeof defaultForm[K]) {
     s_form((prev) => ({ ...prev, [key]: value }))
   }
@@ -228,14 +226,6 @@ export default function CreatePage() {
     handleProcessPhoto(photoFile, form.poseChoice, form.customPose)
   }, [form.poseChoice])
 
-  useEffect(() => {
-    if (!photoFile) return
-    if (customPoseDebounce.current) clearTimeout(customPoseDebounce.current)
-    customPoseDebounce.current = setTimeout(() => {
-      handleProcessPhoto(photoFile, form.poseChoice, form.customPose)
-    }, 900)
-    return () => { if (customPoseDebounce.current) clearTimeout(customPoseDebounce.current) }
-  }, [form.customPose])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -353,6 +343,7 @@ export default function CreatePage() {
             <S.CustomPoseInput
               value={form.customPose}
               onChange={(e) => handleField("customPose", e.target.value)}
+              onBlur={() => { if (photoFile && form.customPose.trim()) handleProcessPhoto() }}
               placeholder="Or describe your own pose... (overrides selection above)"
               disabled={processingPhoto}
             />
