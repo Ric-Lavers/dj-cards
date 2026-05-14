@@ -146,8 +146,13 @@ export default function CreatePage() {
   }
 
   function loadFile(file: File) {
+    if (file.size > 20 * 1024 * 1024) {
+      s_photoError("That photo is too large — please use an image under 20 MB.")
+      return
+    }
     s_photoFile(file)
     s_editedPhoto(null)
+    s_photoError(null)
     const reader = new FileReader()
     reader.onload = (ev) => s_photoPreview(ev.target?.result as string)
     reader.readAsDataURL(file)
@@ -484,7 +489,7 @@ export default function CreatePage() {
           </S.MobileInlinePreview>
 
           {submitError && <S.SubmitError>{submitError}</S.SubmitError>}
-          <S.SubmitButton type="submit" disabled={loading}>
+          <S.SubmitButton type="submit" disabled={loading || !editedPhoto}>
             {loading ? "Generating..." : "Generate Card"}
           </S.SubmitButton>
         </form>

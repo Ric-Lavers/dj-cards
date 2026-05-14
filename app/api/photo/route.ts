@@ -23,6 +23,14 @@ export async function POST(req: NextRequest) {
         { status: 422 }
       )
     }
-    throw err
+    const status = err?.status ?? err?.response?.status
+    if (status === 413 || status === 403 || err?.message?.toLowerCase().includes("too large")) {
+      return NextResponse.json(
+        { error: "Your photo is too large for AI processing. Please use a smaller image (under 20 MB)." },
+        { status: 413 }
+      )
+    }
+    console.error("[photo/route] processArtistPhoto failed:", err)
+    return NextResponse.json({ error: "Something went wrong processing your photo — please try again." }, { status: 500 })
   }
 }
