@@ -30,7 +30,7 @@ CONCEPT: {CONCEPT}
 Instructions:
 - Use the person's face as the foundation — keep it recognisable.
 - Fully commit to the concept: add costumes, props, accessories, effects, makeup, lighting, and atmosphere that match it.
-- Replace the background with something dramatic that fits the concept.
+- Replace the background with something dramatic that fits the concept. unless there is a cool background element in the original that fits the concept then minmized it to fit the dark overal tone.
 - Collectible card quality — bold, high-contrast, striking. Dark overall tone.
 - Portrait orientation, subject centred. No text or overlays.`
 
