@@ -150,6 +150,11 @@ export const RadioOption = styled.button<{ $active: boolean }>`
   font-family: ${theme.fonts.body};
   cursor: pointer;
   transition: all 0.15s;
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
 `
 
 export const CustomPoseInput = styled.input`

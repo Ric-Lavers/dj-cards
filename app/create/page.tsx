@@ -345,7 +345,7 @@ export default function CreatePage() {
             <S.Label>Pose</S.Label>
             <S.RadioGroup>
               {POSES.map(({ value, label, emoji }) => (
-                <S.RadioOption key={value} $active={form.poseChoice === value} onClick={() => handleField("poseChoice", value)} type="button">
+                <S.RadioOption key={value} $active={form.poseChoice === value} onClick={() => handleField("poseChoice", value)} type="button" disabled={processingPhoto}>
                   {emoji} {label}
                 </S.RadioOption>
               ))}
@@ -354,6 +354,7 @@ export default function CreatePage() {
               value={form.customPose}
               onChange={(e) => handleField("customPose", e.target.value)}
               placeholder="Or describe your own pose... (overrides selection above)"
+              disabled={processingPhoto}
             />
           </S.Section>
 
