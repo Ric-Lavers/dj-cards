@@ -16,6 +16,7 @@ const POSE_PROMPTS: Record<PoseChoice, string> = {
 // Used for preset poses — preserves identity strictly, changes pose + lighting only
 const PRESET_STYLE_PROMPT = `Relight and recompose this photo as a dramatic DJ collectible card portrait.
 - Preserve the person's face, skin tone, and identity exactly — do not alter their features.
+- Make the person appear approximately 5 years younger: soften fine lines, freshen the skin slightly, add a subtle glow — keep it natural, not plastic.
 - Remove the background and replace with a deep near-black void (#0a0008).
 - Strong rim lighting in electric purple or deep gold behind the subject.
 - Subtle cold-blue/violet atmospheric haze for depth. Soft directional key light, slight warmth.
@@ -36,6 +37,7 @@ Instructions:
 
 const NATURAL_PROMPT = `Remove the background from this photo and replace it with a deep near-black void (#0a0008).
 Keep the subject exactly as they are — pose, lighting, expression, clothing unchanged.
+Make the person appear approximately 5 years younger: soften fine lines, freshen the skin slightly, add a subtle glow — keep it natural, not plastic.
 Add only a subtle dark purple rim glow around the edges to separate them from the background.`
 
 export async function processArtistPhoto(
