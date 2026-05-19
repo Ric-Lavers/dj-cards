@@ -16,6 +16,12 @@ export async function POST(req: NextRequest) {
     const b64 = `data:image/png;base64,${editedBuffer.toString("base64")}`
     return NextResponse.json({ url: b64 })
   } catch (err: any) {
+    if (err?.code === "billing_hard_limit_reached") {
+      return NextResponse.json(
+        { error: "AI processing is temporarily unavailable — the service has hit its usage limit. Please try again later." },
+        { status: 503 }
+      )
+    }
     if (err?.code === "moderation_blocked") {
       return NextResponse.json(
         { error: "That concept was flagged by OpenAI's safety system. Try a different pose or wording." },

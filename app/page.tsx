@@ -9,19 +9,35 @@ export default function HomePage() {
       <p style={{ color: "#6b6b80", fontSize: "1.1rem" }}>
         Your DJ. A card. Like a baseball card, but better.
       </p>
-      <Link
-        href="/create"
-        style={{
-          background: "#c9a84c",
-          color: "#0a0a0a",
-          padding: "0.8rem 2.5rem",
-          borderRadius: "6px",
-          fontWeight: 700,
-          fontSize: "1rem",
-        }}
-      >
-        Create your card
-      </Link>
+      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
+        <Link
+          href="/create"
+          style={{
+            background: "#c9a84c",
+            color: "#0a0a0a",
+            padding: "0.8rem 2.5rem",
+            borderRadius: "6px",
+            fontWeight: 700,
+            fontSize: "1rem",
+          }}
+        >
+          Create your card
+        </Link>
+        <Link
+          href="/deck"
+          style={{
+            background: "transparent",
+            color: "#c9a84c",
+            padding: "0.8rem 2.5rem",
+            borderRadius: "6px",
+            fontWeight: 700,
+            fontSize: "1rem",
+            border: "2px solid #c9a84c",
+          }}
+        >
+          View the deck
+        </Link>
+      </div>
     </main>
   )
 }

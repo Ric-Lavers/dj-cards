@@ -32,7 +32,7 @@ const ALL_SKILLS: { value: Skill; label: string }[] = [
 
 const defaultForm = {
   djName: "",
-  poseChoice: "headphone_grab" as PoseChoice,
+  poseChoice: "natural" as PoseChoice,
   customPose: "",
   genres: [] as string[],
   yearsPlaying: 0,
@@ -224,6 +224,11 @@ export default function CreatePage() {
   useEffect(() => {
     if (!photoFile) return
     handleProcessPhoto(photoFile, form.poseChoice, form.customPose)
+  }, [photoFile])
+
+  useEffect(() => {
+    if (!photoFile) return
+    handleProcessPhoto(photoFile, form.poseChoice, form.customPose)
   }, [form.poseChoice])
 
 
@@ -301,7 +306,7 @@ export default function CreatePage() {
                 />
               )}
               {photoPreview
-                ? <S.PhotoThumb src={photoPreview} alt="Your photo" $dim={processingPhoto} />
+                ? <S.PhotoThumb src={editedPhoto ?? photoPreview} alt="Your photo" $dim={processingPhoto} />
                 : <S.UploadPrompt>{isDragActive ? "Drop it!" : "Tap or drag a photo here"}</S.UploadPrompt>
               }
               {processingPhoto && <S.AiOverlay>Generating with AI...</S.AiOverlay>}

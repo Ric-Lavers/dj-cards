@@ -13,7 +13,6 @@ const POSE_PROMPTS: Record<PoseChoice, string> = {
   natural: "",
 }
 
-// Used for preset poses — preserves identity strictly, changes pose + lighting only
 const PRESET_STYLE_PROMPT = `Relight and recompose this photo as a dramatic DJ collectible card portrait.
 - Preserve the person's face, skin tone, and identity exactly — do not alter their features.
 - Minimise crow's feet around the eyes.
@@ -23,7 +22,6 @@ const PRESET_STYLE_PROMPT = `Relight and recompose this photo as a dramatic DJ c
 - High contrast, cinematic. No lens flare, no text, no overlays.
 - Portrait crop, subject centred.`
 
-// Used for custom prompts — creative freedom, face stays recognisable as the base
 const CUSTOM_STYLE_PROMPT = `Transform this person into the following concept for a collectible DJ card portrait:
 
 CONCEPT: {CONCEPT}

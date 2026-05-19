@@ -334,7 +334,9 @@ export const FlipToggle = styled.button`
 export const UploadArea = styled.div<{ $hasPhoto: boolean; $processing?: boolean; $isDragging?: boolean }>`
   position: relative;
   width: 100%;
-  height: 200px;
+  aspect-ratio: 1;
+  max-height: 300px;
+  max-width: 300px;
   border: 2px dashed ${({ $hasPhoto, $isDragging }) =>
     $isDragging ? "#a855f7" : $hasPhoto ? theme.colors.gold : theme.colors.border};
   border-radius: 8px;
