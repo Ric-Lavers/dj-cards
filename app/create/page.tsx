@@ -34,7 +34,7 @@ const ALL_SKILLS: { value: Skill; label: string }[] = [
 
 const defaultForm = {
   djName: "",
-  poseChoice: "natural" as PoseChoice,
+  poseChoice: "cutout" as PoseChoice,
   customPose: "",
   genres: [] as string[],
   yearsPlaying: 0,

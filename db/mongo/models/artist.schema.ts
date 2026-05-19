@@ -39,7 +39,7 @@ const ArtistSchema = new Schema<ArtistDoc>(
     poseChoice: {
       type: String,
       enum: ["hands_in_air", "knob_twiddler", "headphone_grab", "fist_pump", "the_lean", "eyes_closed", "natural", "original", "cutout"],
-      default: "headphone_grab",
+      default: "cutout",
     },
     customPose: { type: String, default: "" },
     genres: { type: [String], validate: (v: string[]) => v.length === 2 },
