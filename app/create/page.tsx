@@ -208,6 +208,12 @@ export default function CreatePage() {
     s_processingPhoto(true)
     s_photoError(null)
     try {
+      if (pose === "cutout" && !custom.trim()) {
+        const { removeBackground } = await import("@imgly/background-removal")
+        const result = await removeBackground(file)
+        s_editedPhoto(URL.createObjectURL(result))
+        return
+      }
       const fd = new FormData()
       fd.append("photo", file)
       fd.append("pose", pose)

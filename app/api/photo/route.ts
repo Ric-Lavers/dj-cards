@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { processArtistPhoto } from "@/services/ai/processArtistPhoto"
-import { removeBackground } from "@/services/ai/removeBackground"
 import type { PoseChoice } from "@/db/mongo/models/artist.schema"
 
 export async function POST(req: NextRequest) {
@@ -16,12 +15,6 @@ export async function POST(req: NextRequest) {
 
     if (pose === "original") {
       const b64 = `data:${file.type || "image/jpeg"};base64,${buffer.toString("base64")}`
-      return NextResponse.json({ url: b64 })
-    }
-
-    if (pose === "cutout") {
-      const resultBuffer = await removeBackground(buffer, file.type || "image/jpeg")
-      const b64 = `data:image/png;base64,${resultBuffer.toString("base64")}`
       return NextResponse.json({ url: b64 })
     }
 
