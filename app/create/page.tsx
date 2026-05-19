@@ -210,7 +210,9 @@ export default function CreatePage() {
     try {
       if (pose === "cutout" && !custom.trim()) {
         const { removeBackground } = await import("@imgly/background-removal")
-        const result = await removeBackground(file)
+        const opts: Record<string, unknown> = { model: "isnet_quint8" }
+        if (process.env.NEXT_PUBLIC_BG_REMOVAL_PATH) opts.publicPath = process.env.NEXT_PUBLIC_BG_REMOVAL_PATH
+        const result = await removeBackground(file, opts)
         s_editedPhoto(URL.createObjectURL(result))
         return
       }
@@ -231,6 +233,7 @@ export default function CreatePage() {
 
   useEffect(() => {
     if (!photoFile) return
+    
     handleProcessPhoto(photoFile, form.poseChoice, form.customPose)
   }, [photoFile])
 
