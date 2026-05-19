@@ -12,6 +12,7 @@ const POSE_PROMPTS: Record<PoseChoice, string> = {
   eyes_closed: "head tilted back slightly, eyes closed, completely lost in the music",
   natural: "",
   original: "",
+  cutout: "",
 }
 
 const PRESET_STYLE_PROMPT = `Relight and recompose this photo as a dramatic DJ collectible card portrait.

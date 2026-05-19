@@ -1,6 +1,6 @@
 import { Schema, model, models, Model, Document, Types } from "mongoose"
 
-export type PoseChoice = "hands_in_air" | "knob_twiddler" | "headphone_grab" | "fist_pump" | "the_lean" | "eyes_closed" | "natural" | "original"
+export type PoseChoice = "hands_in_air" | "knob_twiddler" | "headphone_grab" | "fist_pump" | "the_lean" | "eyes_closed" | "natural" | "original" | "cutout"
 export type Skill = "scratching" | "long_mixes" | "vinyl" | "cdjs" | "ableton" | "guitar" | "vocalist"
 
 export interface ArtistDoc extends Document {
@@ -38,7 +38,7 @@ const ArtistSchema = new Schema<ArtistDoc>(
     editedPhoto: { type: String, default: "" },
     poseChoice: {
       type: String,
-      enum: ["hands_in_air", "knob_twiddler", "headphone_grab", "fist_pump", "the_lean", "eyes_closed", "natural", "original"],
+      enum: ["hands_in_air", "knob_twiddler", "headphone_grab", "fist_pump", "the_lean", "eyes_closed", "natural", "original", "cutout"],
       default: "headphone_grab",
     },
     customPose: { type: String, default: "" },

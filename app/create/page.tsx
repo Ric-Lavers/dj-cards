@@ -17,6 +17,7 @@ const POSES: { value: PoseChoice; label: string; emoji: string }[] = [
   { value: "eyes_closed",   label: "Eyes Closed",      emoji: "😌" },
   { value: "natural",       label: "Natural",          emoji: "🪄" },
   { value: "original",      label: "Original",         emoji: "📷" },
+  { value: "cutout",        label: "Cutout",           emoji: "✂️" },
 ]
 
 const FALLBACK_GENRES = ["House", "Techno", "Drum & Bass", "Jungle", "Disco", "Electro", "Trance", "Ambient", "Hip-Hop", "Funk"]
