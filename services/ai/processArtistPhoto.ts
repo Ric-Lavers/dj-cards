@@ -11,6 +11,7 @@ const POSE_PROMPTS: Record<PoseChoice, string> = {
   the_lean: "hunched intensely over the decks, shoulders forward, fully locked in",
   eyes_closed: "head tilted back slightly, eyes closed, completely lost in the music",
   natural: "",
+  original: "",
 }
 
 const PRESET_STYLE_PROMPT = `Relight and recompose this photo as a dramatic DJ collectible card portrait.

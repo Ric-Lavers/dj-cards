@@ -12,6 +12,12 @@ export async function POST(req: NextRequest) {
     if (!file) return NextResponse.json({ error: "No photo provided" }, { status: 400 })
 
     const buffer = Buffer.from(await file.arrayBuffer())
+
+    if (pose === "original") {
+      const b64 = `data:${file.type || "image/jpeg"};base64,${buffer.toString("base64")}`
+      return NextResponse.json({ url: b64 })
+    }
+
     const editedBuffer = await processArtistPhoto(buffer, file.type || "image/jpeg", pose, customPose ?? undefined)
     const b64 = `data:image/png;base64,${editedBuffer.toString("base64")}`
     return NextResponse.json({ url: b64 })
