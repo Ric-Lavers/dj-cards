@@ -173,7 +173,7 @@ export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props
           const isEmpty = (value === 0 || value === "0") && label !== "YEARS PLAYING"
           return (
             <g key={String(label)} transform={`translate(22, ${74 + i * 36})`}>
-              <text fontFamily={theme.fonts.mono} fontSize={8} fill={theme.colors.muted} letterSpacing="1" y={0}
+              <text fontFamily={theme.fonts.mono} fontSize={8} fill="#b0b0c8" letterSpacing="1" y={0}
                 visibility={isEmpty && label !== "YEARS PLAYING" ? "hidden" : "visible"}>
                 {label}
               </text>
@@ -198,35 +198,35 @@ export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props
         <text x={22} y={198} fontFamily={theme.fonts.mono} fontSize={7} fill={theme.colors.muted} letterSpacing="1">EASY LISTENING</text>
         <text x={W - 16} y={198} fontFamily={theme.fonts.mono} fontSize={7} fill={theme.colors.muted} textAnchor="end" letterSpacing="1">DANCEABILITY</text>
         {/* Track */}
-        <rect x={22} y={204} width={W - 44} height={5} rx={2.5} fill={theme.colors.surface} />
+        <rect x={22} y={204} width={W - 44} height={9} rx={4.5} fill={theme.colors.surface} />
         {/* Fill */}
         <rect
           x={22}
           y={204}
           width={((stats?.danceabilityScale ?? 50) / 100) * (W - 44)}
-          height={5}
-          rx={2.5}
+          height={9}
+          rx={4.5}
           fill={`url(#back-slash-grad${uid})`}
         />
         {/* Thumb */}
         <circle
           cx={22 + ((stats?.danceabilityScale ?? 50) / 100) * (W - 44)}
-          cy={206.5}
-          r={5}
+          cy={208.5}
+          r={8}
           fill={theme.colors.gold}
         />
 
         {/* ── Genres ── */}
         <line x1={12} y1={222} x2={W} y2={222} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
         {(genres ?? []).slice(0, 2).map((genre, i) => (
-          <g key={genre} transform={`translate(${22 + i * 110}, 228)`}>
-            <rect width={100} height={22} rx={11} fill="#1a0a2e" stroke="#7c3aed" strokeWidth={0.75} />
+          <g key={genre} transform={`translate(${22 + i * 120}, 228)`}>
+            <rect width={112} height={30} rx={15} fill="#2d1060" stroke="#a855f7" strokeWidth={1} />
             <text
-              x={50}
-              y={11}
+              x={56}
+              y={15}
               fontFamily={theme.fonts.mono}
-              fontSize={8}
-              fill="#c084fc"
+              fontSize={10}
+              fill="#e0b8ff"
               textAnchor="middle"
               dominantBaseline="middle"
               letterSpacing="1"
@@ -237,22 +237,22 @@ export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props
         ))}
 
         {/* ── Skills ── */}
-        <line x1={12} y1={260} x2={W} y2={260} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
+        <line x1={12} y1={268} x2={W} y2={268} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
         {(skills ?? []).slice(0, 8).map((skill, i) => {
           const col = i % 4
           const row = Math.floor(i / 4)
           const label = skillLabel(skill)
-          const x = 18 + col * 80
-          const y = 268 + row * 28
+          const x = 18 + col * 84
+          const y = 276 + row * 32
           return (
             <g key={skill} transform={`translate(${x}, ${y})`}>
-              <rect width={72} height={22} rx={4} fill={theme.colors.surface} />
-              <rect width={3} height={22} rx={1.5} fill="#7c3aed" opacity="0.7" />
+              <rect width={76} height={26} rx={5} fill="#2a2a40" />
+              <rect width={3} height={26} rx={1.5} fill="#a855f7" />
               <text
-                x={40}
-                y={11}
+                x={42}
+                y={13}
                 fontFamily={theme.fonts.mono}
-                fontSize={7.5}
+                fontSize={8.5}
                 fill={theme.colors.white}
                 textAnchor="middle"
                 dominantBaseline="middle"
