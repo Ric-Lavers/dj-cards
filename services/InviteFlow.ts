@@ -1,5 +1,6 @@
 import { Types } from "mongoose"
 import InviteModel from "@/db/mongo/models/invite.schema"
+import "@/db/mongo/models/artist.schema"
 import { connectToDatabase } from "@/db/mongo/connect"
 import type { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies"
 
@@ -9,7 +10,7 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
 export class InviteFlow {
   static async fromToken(token: string) {
     await connectToDatabase()
-    const invite = await InviteModel.findOne({ token })
+    const invite = await InviteModel.findOne({ token }).populate<{ createdBy: { djName: string } }>("createdBy", "djName")
     return new InviteFlow(invite)
   }
 
@@ -35,8 +36,10 @@ export class InviteFlow {
     return !!this.invite
   }
 
-  get invitedBy() {
-    return this.invite?.createdBy ?? null
+  get inviterName() {
+    const createdBy = this.invite?.createdBy
+    if (!createdBy || typeof createdBy !== "object") return null
+    return (createdBy as { djName: string }).djName ?? null
   }
 
   async record(artistId: Types.ObjectId) {
