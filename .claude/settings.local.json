@@ -10,7 +10,10 @@
       "mcp__playwright__browser_navigate",
       "Bash(vercel --version)",
       "Bash(npm list *)",
-      "mcp__playwright__browser_take_screenshot"
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(pip3 install *)",
+      "Bash(mongosh \"mongodb+srv://aeonknightdv8:Summerthyme25@cluster0.mrvqqgn.mongodb.net/djcards\" --eval \"db.artists.findOne\\({}, {djName:1, qrCodeUrl:1, _id:1}\\)\" --quiet)",
+      "Bash(mongosh *)"
     ]
   }
 }

@@ -26,10 +26,12 @@ interface Props {
   editedPhoto?: string
   cardNumber?: number
   instanceId?: string
+  squareCorners?: boolean
 }
 
-export const CardFront = ({ djName, editedPhoto, cardNumber, instanceId }: Props) => {
+export const CardFront = ({ djName, editedPhoto, cardNumber, instanceId, squareCorners }: Props) => {
   const uid = instanceId ? `-${instanceId}` : ""
+  const r = squareCorners ? 0 : borderRadius
   const rays = sunburstPaths(W * 0.52, H * 0.42, 24, 700)
 
   return (
@@ -42,7 +44,7 @@ export const CardFront = ({ djName, editedPhoto, cardNumber, instanceId }: Props
     >
       <defs>
         <clipPath id={`front-card-clip${uid}`}>
-          <rect width={W} height={H} rx={borderRadius} ry={borderRadius} />
+          <rect width={W} height={H} rx={r} ry={r} />
         </clipPath>
         <clipPath id={`front-photo-clip${uid}`}>
           <rect x={12} y={12} width={W - 24} height={H - 100} rx={8} ry={8} />
@@ -172,8 +174,8 @@ export const CardFront = ({ djName, editedPhoto, cardNumber, instanceId }: Props
           y={1}
           width={W - 2}
           height={H - 2}
-          rx={borderRadius}
-          ry={borderRadius}
+          rx={r}
+          ry={r}
           fill="none"
           stroke={theme.colors.gold}
           strokeWidth={1.5}

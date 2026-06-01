@@ -30,12 +30,14 @@ const PrintCard = memo(({ artist, face, cutMarks }: { artist: Artist; face: "fro
         editedPhoto={artist.editedPhoto}
         cardNumber={artist.cardNumber}
         instanceId={`print-f-${artist._id}`}
+        squareCorners
       />
     ) : (
       <CardBack
         artist={artist}
         qrDataUrl={artist.qrCodeUrl}
         instanceId={`print-b-${artist._id}`}
+        squareCorners
       />
     )}
   </S.CardWrap>

@@ -36,10 +36,12 @@ interface Props {
   artist: Partial<ArtistDoc>
   qrDataUrl?: string
   instanceId?: string
+  squareCorners?: boolean
 }
 
-export const CardBack = ({ artist, qrDataUrl, instanceId }: Props) => {
+export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props) => {
   const uid = instanceId ? `-${instanceId}` : ""
+  const r = squareCorners ? 0 : borderRadius
   const { djName, stats, genres, skills, cardNumber, socials } = artist
   const instagram = socials?.instagram?.replace(/^@/, "")
   const soundcloud = socials?.soundcloud?.replace(/^@/, "")
@@ -56,7 +58,7 @@ export const CardBack = ({ artist, qrDataUrl, instanceId }: Props) => {
     >
       <defs>
         <clipPath id={`back-card-clip${uid}`}>
-          <rect width={W} height={H} rx={borderRadius} ry={borderRadius} />
+          <rect width={W} height={H} rx={r} ry={r} />
         </clipPath>
 
         {/* Diagonal stripe pattern */}
@@ -322,7 +324,7 @@ export const CardBack = ({ artist, qrDataUrl, instanceId }: Props) => {
         {/* ── Card border ── */}
         <rect
           x={1} y={1} width={W - 2} height={H - 2}
-          rx={borderRadius} ry={borderRadius}
+          rx={r} ry={r}
           fill="none"
           stroke={theme.colors.gold}
           strokeWidth={1.5}
