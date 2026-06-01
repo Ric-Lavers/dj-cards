@@ -30,10 +30,17 @@ export class InviteFlow {
     return invite.token
   }
 
-  constructor(private invite: InstanceType<typeof InviteModel> | null) {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(private invite: any) {}
 
   get valid() {
     return !!this.invite
+  }
+
+  get invitedBy() {
+    const createdBy = this.invite?.createdBy
+    if (!createdBy || typeof createdBy !== "object") return null
+    return (createdBy as { _id: unknown })._id ?? null
   }
 
   get inviterName() {
