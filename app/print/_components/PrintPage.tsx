@@ -12,6 +12,7 @@ const LAYOUTS = [
   { cols: 3, rows: 2, label: "3 × 2" },
   { cols: 3, rows: 3, label: "3 × 3" },
   { cols: 4, rows: 3, label: "4 × 3" },
+  { cols: 1, rows: 1, label: "1 / page" },
 ] as const
 
 function chunk<T>(arr: T[], size: number): T[][] {
@@ -21,6 +22,31 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 type Artist = Partial<ArtistDoc> & { _id: string }
+
+// Marks positioned relative to BleedCardWrap (the trim edge).
+// Each line extends outward into the bleed with a 1mm gap from the corner,
+// so the H and V lines at each corner never touch.
+function CropMarks() {
+  const gap = "1mm"
+  const len = "4mm"
+  const thick = "0.75px"
+  return (
+    <>
+      {/* top-left: H extends left, V extends up */}
+      <S.Mark style={{ top: 0, right: `calc(100% + ${gap})`, width: len, height: thick }} />
+      <S.Mark style={{ right: "100%", bottom: `calc(100% + ${gap})`, width: thick, height: len }} />
+      {/* top-right: H extends right, V extends up */}
+      <S.Mark style={{ top: 0, left: `calc(100% + ${gap})`, width: len, height: thick }} />
+      <S.Mark style={{ left: "100%", bottom: `calc(100% + ${gap})`, width: thick, height: len }} />
+      {/* bottom-left: H extends left, V extends down */}
+      <S.Mark style={{ bottom: 0, right: `calc(100% + ${gap})`, width: len, height: thick }} />
+      <S.Mark style={{ right: "100%", top: `calc(100% + ${gap})`, width: thick, height: len }} />
+      {/* bottom-right: H extends right, V extends down */}
+      <S.Mark style={{ bottom: 0, left: `calc(100% + ${gap})`, width: len, height: thick }} />
+      <S.Mark style={{ left: "100%", top: `calc(100% + ${gap})`, width: thick, height: len }} />
+    </>
+  )
+}
 
 const PrintCard = memo(({ artist, face, cutMarks }: { artist: Artist; face: "front" | "back"; cutMarks: boolean }) => (
   <S.CardWrap $cutMarks={cutMarks}>
@@ -57,6 +83,7 @@ export const PrintPage = ({ artists }: Props) => {
   const [cutMarks, s_cutMarks] = useState(false)
 
   const layout = LAYOUTS[layoutIdx]
+  const isSinglePage = layout.cols === 1 && layout.rows === 1
   const cardsPerSheet = layout.cols * layout.rows
   const selected = artists.filter(a => selectedIds.has(a._id))
 
@@ -106,9 +133,22 @@ export const PrintPage = ({ artists }: Props) => {
 
   const totalSheets = mode === "both" ? frontSheets.length + backSheets.length : frontSheets.length
 
+  const bleedPages: { artist: Artist; face: "front" | "back"; key: string }[] = []
+  if (isSinglePage) {
+    if (mode === "both") {
+      selected.forEach(a => {
+        bleedPages.push({ artist: a, face: "front", key: `bleed-f-${a._id}` })
+        bleedPages.push({ artist: a, face: "back", key: `bleed-b-${a._id}` })
+      })
+    } else {
+      const face = mode === "backs" ? "back" : "front"
+      selected.forEach(a => bleedPages.push({ artist: a, face, key: `bleed-${face[0]}-${a._id}` }))
+    }
+  }
+
   return (
     <>
-      <S.PrintGlobal />
+      {isSinglePage ? <S.BleedGlobal /> : <S.PrintGlobal />}
       <S.Layout>
         <S.Controls>
           <S.PrintBtn onClick={() => window.print()}>Print</S.PrintBtn>
@@ -168,22 +208,48 @@ export const PrintPage = ({ artists }: Props) => {
 
         <S.Preview>
           <S.PreviewMeta>
-            {selected.length} card{selected.length !== 1 ? "s" : ""} · {totalSheets} sheet{totalSheets !== 1 ? "s" : ""}
-            {mode === "both" && ` (${frontSheets.length} fronts + ${backSheets.length} backs)`}
+            {selected.length} card{selected.length !== 1 ? "s" : ""}
+            {isSinglePage
+              ? ` · ${bleedPages.length} page${bleedPages.length !== 1 ? "s" : ""}`
+              : ` · ${totalSheets} sheet${totalSheets !== 1 ? "s" : ""}${mode === "both" ? ` (${frontSheets.length} fronts + ${backSheets.length} backs)` : ""}`}
           </S.PreviewMeta>
 
           {selected.length === 0 && <S.Empty>No cards selected.</S.Empty>}
 
-          {sheets.map((sheet, idx) => (
-            <S.SheetContainer key={sheet.key} $pageBreak={idx > 0}>
-              <S.SheetLabel>{sheet.label}</S.SheetLabel>
-              <S.Sheet $cols={layout.cols}>
-                {sheet.cards.map(artist => (
-                  <PrintCard key={artist._id} artist={artist} face={sheet.face} cutMarks={cutMarks} />
-                ))}
-              </S.Sheet>
-            </S.SheetContainer>
-          ))}
+          {isSinglePage
+            ? bleedPages.map((p, idx) => (
+                <S.BleedSheet key={p.key} $last={idx === bleedPages.length - 1}>
+                  <S.BleedCardWrap>
+                    {p.face === "front" ? (
+                      <CardFront
+                        djName={p.artist.djName ?? ""}
+                        editedPhoto={p.artist.editedPhoto}
+                        cardNumber={p.artist.cardNumber}
+                        instanceId={`bleed-f-${p.artist._id}`}
+                        squareCorners
+                      />
+                    ) : (
+                      <CardBack
+                        artist={p.artist}
+                        qrDataUrl={p.artist.qrCodeUrl}
+                        instanceId={`bleed-b-${p.artist._id}`}
+                        squareCorners
+                      />
+                    )}
+                    <CropMarks />
+                  </S.BleedCardWrap>
+                </S.BleedSheet>
+              ))
+            : sheets.map((sheet, idx) => (
+                <S.SheetContainer key={sheet.key} $pageBreak={idx > 0}>
+                  <S.SheetLabel>{sheet.label}</S.SheetLabel>
+                  <S.Sheet $cols={layout.cols}>
+                    {sheet.cards.map(artist => (
+                      <PrintCard key={artist._id} artist={artist} face={sheet.face} cutMarks={cutMarks} />
+                    ))}
+                  </S.Sheet>
+                </S.SheetContainer>
+              ))}
         </S.Preview>
       </S.Layout>
     </>
