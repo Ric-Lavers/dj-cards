@@ -5,7 +5,6 @@ export interface SpecialSkillDoc extends Document {
   prompt: string
   largeImage: string
   smallImage: string
-  sourcePhoto: string
   invented: boolean
   order: number
 }
@@ -16,7 +15,6 @@ const SpecialSkillSchema = new Schema<SpecialSkillDoc>(
     prompt: { type: String, default: "" },
     largeImage: { type: String, default: "" },
     smallImage: { type: String, default: "" },
-    sourcePhoto: { type: String, default: "" },
     invented: { type: Boolean, default: false },
     order: { type: Number, default: 0 },
   },

@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useDropzone } from "react-dropzone"
 import { AxiosError } from "axios"
 import * as S from "@/app/create/_components/create-page.styles"
 import api from "@/utils/api"
@@ -11,51 +10,29 @@ export default function CreateSpecialSkillPage() {
   const router = useRouter()
   const [name, s_name] = useState("")
   const [prompt, s_prompt] = useState("")
-  const [iconFile, s_iconFile] = useState<File | null>(null)
-  const [iconPreview, s_iconPreview] = useState<string | null>(null)
   const [generating, s_generating] = useState(false)
   const [generateError, s_generateError] = useState<string | null>(null)
-  const [preview, s_preview] = useState<{ largeUrl: string; smallUrl: string; sourcePhoto: string } | null>(null)
+  const [preview, s_preview] = useState<{ largeUrl: string; smallUrl: string } | null>(null)
   const [saving, s_saving] = useState(false)
   const [saveError, s_saveError] = useState<string | null>(null)
 
-  function loadFile(file: File) {
-    s_preview(null)
-    s_generateError(null)
-    s_iconFile(file)
-    const reader = new FileReader()
-    reader.onload = (ev) => s_iconPreview(ev.target?.result as string)
-    reader.readAsDataURL(file)
+  function extractError(err: unknown) {
+    return err instanceof AxiosError ? (err.response?.data?.error as string | undefined) : undefined
   }
 
-  const onDrop = useCallback((accepted: File[]) => {
-    if (accepted[0]) loadFile(accepted[0])
-  }, [])
-
-  const { getRootProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { "image/*": [] },
-    multiple: false,
-    disabled: generating,
-    noClick: true,
-    noKeyboard: true,
-  })
-
   async function handleGenerate() {
-    if (!iconFile || !name.trim()) return
+    if (!name.trim()) return
     s_generating(true)
     s_generateError(null)
     try {
-      const fd = new FormData()
-      fd.append("icon", iconFile)
-      fd.append("name", name.trim())
-      fd.append("prompt", prompt.trim())
-      const result = await api.post("/special-skills/preview", fd) as { largeUrl: string; smallUrl: string; sourcePhoto: string; error?: string }
+      const result = await api.post("/special-skills/preview", {
+        name: name.trim(),
+        prompt: prompt.trim(),
+      }) as { largeUrl: string; smallUrl: string; error?: string }
       if (result.error) { s_generateError(result.error); return }
       s_preview(result)
     } catch (err) {
-      const message = err instanceof AxiosError ? (err.response?.data?.error as string | undefined) : undefined
-      s_generateError(message ?? "Something went wrong — try again.")
+      s_generateError(extractError(err) ?? "Something went wrong — try again.")
     } finally {
       s_generating(false)
     }
@@ -71,13 +48,11 @@ export default function CreateSpecialSkillPage() {
         prompt: prompt.trim(),
         largeImage: preview.largeUrl,
         smallImage: preview.smallUrl,
-        sourcePhoto: preview.sourcePhoto,
       }) as { _id: string; error?: string }
       if (skill.error) { s_saveError(skill.error); return }
       router.push(`/special-skills/${skill._id}`)
     } catch (err) {
-      const message = err instanceof AxiosError ? (err.response?.data?.error as string | undefined) : undefined
-      s_saveError(message ?? "Something went wrong — try again.")
+      s_saveError(extractError(err) ?? "Something went wrong — try again.")
     } finally {
       s_saving(false)
     }
@@ -87,31 +62,6 @@ export default function CreateSpecialSkillPage() {
     <S.Page style={{ gridTemplateColumns: "1fr" }}>
       <S.FormCol style={{ maxWidth: 600, margin: "0 auto" }}>
         <S.Title>Create Special Skill</S.Title>
-
-        <S.Section>
-          <S.SectionHeading>Special Skill Icon</S.SectionHeading>
-          <S.UploadArea
-            {...getRootProps()}
-            $hasPhoto={!!iconPreview}
-            $processing={generating}
-            $isDragging={isDragActive}
-          >
-            {!generating && (
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) loadFile(f) }}
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", zIndex: 2 }}
-              />
-            )}
-            {iconPreview
-              ? <S.PhotoThumb src={preview?.largeUrl ?? iconPreview} alt="Special skill icon reference" $dim={generating} />
-              : <S.UploadPrompt>{isDragActive ? "Drop it!" : "Tap or drag a reference image here"}</S.UploadPrompt>
-            }
-            {generating && <S.AiOverlay>Generating icon with AI...</S.AiOverlay>}
-          </S.UploadArea>
-          {generateError && <S.PhotoError>{generateError}</S.PhotoError>}
-        </S.Section>
 
         <S.Section>
           <S.Label>Name</S.Label>
@@ -128,13 +78,15 @@ export default function CreateSpecialSkillPage() {
           <S.Textarea
             value={prompt}
             onChange={(e) => s_prompt(e.target.value)}
-            placeholder="Describe the concept for the icon — what does this move look/feel like?"
-            rows={3}
+            placeholder="Describe the moment — what happens, how it feels, the energy in the room."
+            rows={4}
           />
         </S.Section>
 
+        {generateError && <S.PhotoError>{generateError}</S.PhotoError>}
+
         {!preview ? (
-          <S.SubmitButton type="button" onClick={handleGenerate} disabled={generating || !iconFile || !name.trim()}>
+          <S.SubmitButton type="button" onClick={handleGenerate} disabled={generating || !name.trim()}>
             {generating ? "Generating..." : "Generate Icon"}
           </S.SubmitButton>
         ) : (

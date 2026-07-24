@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { connectToDatabase } from "@/db/mongo/connect"
 import SpecialSkillModel from "@/db/mongo/models/specialSkill.schema"
-import { inventSpecialSkillNames, generateInventedSkillIcon } from "@/services/ai/inventSpecialSkillNames"
+import { inventSpecialSkillNames } from "@/services/ai/inventSpecialSkillNames"
+import { generateSpecialSkillIcon } from "@/services/ai/generateSpecialSkillIcon"
 import { uploadToBlob } from "@/utils/uploadToBlob"
 import { randomBytes } from "crypto"
 
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     const results = await Promise.allSettled(
       names.map(async (name) => {
-        const { large, small } = await generateInventedSkillIcon(name)
+        const { large, small } = await generateSpecialSkillIcon(name)
         const uid = randomBytes(6).toString("hex")
         const largeImage = await uploadToBlob(large, `special-skills/${uid}-large.png`, "image/png")
         const smallImage = await uploadToBlob(small, `special-skills/${uid}-small.png`, "image/png")
@@ -40,7 +41,6 @@ export async function POST(req: NextRequest) {
         prompt: "",
         largeImage,
         smallImage,
-        sourcePhoto: "",
         invented: true,
         order: nextOrder++,
       })

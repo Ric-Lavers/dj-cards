@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
     const uid = randomBytes(6).toString("hex")
     const largeImage = await ensureBlobUrl(body.largeImage, `special-skills/${uid}-large.png`)
     const smallImage = await ensureBlobUrl(body.smallImage, `special-skills/${uid}-small.png`)
-    const sourcePhoto = body.sourcePhoto ? await ensureBlobUrl(body.sourcePhoto, `special-skills/${uid}-source.png`) : ""
 
     const maxOrderDoc = await SpecialSkillModel.findOne({}).sort({ order: -1 }).lean()
     const skill = await SpecialSkillModel.create({
@@ -36,7 +35,6 @@ export async function POST(req: NextRequest) {
       prompt: body.prompt ?? "",
       largeImage,
       smallImage,
-      sourcePhoto,
       invented: false,
       order: (maxOrderDoc?.order ?? 0) + 1,
     })

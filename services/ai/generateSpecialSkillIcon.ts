@@ -3,26 +3,23 @@ import sharp from "sharp"
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-const ICON_STYLE_PROMPT = `Turn this reference image into a bold, iconic collectible-card emblem representing the DJ special skill "{NAME}": {CONCEPT}
-- Abstract, iconic badge/emblem style — not a literal photo of a person.
-- Centered composition, no text, no lettering, no watermarks.
-- Deep near-black background (#0a0008) with electric purple and gold accent lighting, matching a premium DJ trading-card aesthetic.
-- Bold silhouette that reads clearly even at small sizes.`
+const SPECIAL_SKILL_ICON_PROMPT = `Illustrate the following DJ special-skill moment as a bold, collectible trading-card icon:
 
-export async function generateSpecialSkillIcon(
-  imageBuffer: Buffer,
-  mimeType: string,
-  name: string,
-  prompt?: string
-): Promise<{ large: Buffer; small: Buffer }> {
+SKILL: {NAME}
+SCENE: {CONCEPT}
+
+Instructions:
+- Fully commit to the scene described — dynamic action, dramatic lighting, energy and motion.
+- Deep near-black background (#0a0008) with electric purple and gold rim lighting, matching a premium DJ trading-card aesthetic.
+- Subtle cold-blue/violet atmospheric haze for depth, high contrast, cinematic.
+- Bold, centered composition that reads clearly even at small icon sizes. No text, no lettering, no watermarks.`
+
+export async function generateSpecialSkillIcon(name: string, prompt?: string): Promise<{ large: Buffer; small: Buffer }> {
   const concept = prompt?.trim() || name
-  const finalPrompt = ICON_STYLE_PROMPT.replace("{NAME}", name).replace("{CONCEPT}", concept)
+  const finalPrompt = SPECIAL_SKILL_ICON_PROMPT.replace("{NAME}", name).replace("{CONCEPT}", concept)
 
-  const file = new File([new Uint8Array(imageBuffer)], "icon-source.jpg", { type: mimeType })
-
-  const response = await client.images.edit({
+  const response = await client.images.generate({
     model: "gpt-image-1",
-    image: file,
     prompt: finalPrompt,
     size: "1024x1024",
   })

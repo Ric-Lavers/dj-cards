@@ -3,22 +3,18 @@ import { generateSpecialSkillIcon } from "@/services/ai/generateSpecialSkillIcon
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData()
-    const file = formData.get("icon") as File | null
-    const name = ((formData.get("name") as string) ?? "").trim()
-    const prompt = (formData.get("prompt") as string) ?? ""
+    const body = await req.json()
+    const name = ((body.name as string) ?? "").trim()
+    const prompt = (body.prompt as string) ?? ""
 
-    if (!file) return NextResponse.json({ error: "No icon reference image provided" }, { status: 400 })
     if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 })
 
-    const buffer = Buffer.from(await file.arrayBuffer())
-    const { large, small } = await generateSpecialSkillIcon(buffer, file.type || "image/jpeg", name, prompt)
+    const { large, small } = await generateSpecialSkillIcon(name, prompt)
 
-    const sourcePhoto = `data:${file.type || "image/jpeg"};base64,${buffer.toString("base64")}`
     const largeUrl = `data:image/png;base64,${large.toString("base64")}`
     const smallUrl = `data:image/png;base64,${small.toString("base64")}`
 
-    return NextResponse.json({ largeUrl, smallUrl, sourcePhoto })
+    return NextResponse.json({ largeUrl, smallUrl })
   } catch (err) {
     const e = err as { code?: string; status?: number; response?: { status?: number }; message?: string }
     if (e?.code === "billing_hard_limit_reached") {
@@ -29,14 +25,14 @@ export async function POST(req: NextRequest) {
     }
     if (e?.code === "moderation_blocked") {
       return NextResponse.json(
-        { error: "That concept was flagged by OpenAI's safety system. Try a different image or wording." },
+        { error: "That concept was flagged by OpenAI's safety system. Try a different wording." },
         { status: 422 }
       )
     }
     const status = e?.status ?? e?.response?.status
     if (status === 413 || status === 403 || e?.message?.toLowerCase().includes("too large")) {
       return NextResponse.json(
-        { error: "Your image is too large — please use an image under 4 MB." },
+        { error: "That request was too large — try a shorter prompt." },
         { status: 413 }
       )
     }

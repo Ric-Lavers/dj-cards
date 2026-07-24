@@ -8,7 +8,6 @@ interface SkillData {
   _id: string
   name: string
   prompt: string
-  sourcePhoto: string
 }
 
 export const SpecialSkillEditForm = ({ skill }: { skill: SkillData }) => {
@@ -40,26 +39,14 @@ export const SpecialSkillEditForm = ({ skill }: { skill: SkillData }) => {
   }
 
   async function handleRegenerate() {
-    if (!skill.sourcePhoto) {
-      s_regenError("No reference photo stored for this skill — can't regenerate.")
-      return
-    }
     s_regenerating(true)
     s_regenError(null)
     s_regenPreview(null)
     try {
-      const res = await fetch(skill.sourcePhoto)
-      const blob = await res.blob()
-      const file = new File([blob], "source.jpg", { type: blob.type || "image/jpeg" })
-      const fd = new FormData()
-      fd.append("icon", file)
-      fd.append("name", name.trim())
-      fd.append("prompt", prompt.trim())
-      const result = (await api.post("/special-skills/preview", fd)) as {
-        largeUrl: string
-        smallUrl: string
-        error?: string
-      }
+      const result = (await api.post("/special-skills/preview", {
+        name: name.trim(),
+        prompt: prompt.trim(),
+      })) as { largeUrl: string; smallUrl: string; error?: string }
       if (result.error) {
         s_regenError(result.error)
         return
