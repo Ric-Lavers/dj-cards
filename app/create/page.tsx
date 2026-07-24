@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useDropzone } from "react-dropzone"
 import { AxiosError } from "axios"
 import * as S from "./_components/create-page.styles"
-import { CardFront, CardBack, SpecialSkillsCard, FlipPreview } from "@/component-library"
+import { CardFront, CardBack, FlipPreview } from "@/component-library"
 import api from "@/utils/api"
 import type { PoseChoice, Skill } from "@/db/mongo/models/artist.schema"
 
@@ -334,7 +334,6 @@ export default function CreatePage() {
 
   const front = <CardFront djName={form.djName} editedPhoto={editedPhoto ?? photoPreview ?? undefined} />
   const back = <CardBack artist={previewArtist} specialSkillsData={specialSkillsData} />
-  const skillsFace = <SpecialSkillsCard artist={previewArtist} specialSkillsData={specialSkillsData} />
 
   return (
     <S.Page>
@@ -589,7 +588,7 @@ export default function CreatePage() {
           {/* ── Mobile inline preview (bottom of form, above submit) ── */}
           <S.MobileInlinePreview ref={inlinePreviewRef}>
             <S.InlinePreviewScaler>
-              <FlipPreview faces={[front, back, skillsFace]} />
+              <FlipPreview faces={[front, back]} />
             </S.InlinePreviewScaler>
           </S.MobileInlinePreview>
 
@@ -603,7 +602,7 @@ export default function CreatePage() {
       {/* ── Desktop preview (right column, hidden on mobile) ── */}
       <S.PreviewCol>
         <S.PreviewSticky>
-          <FlipPreview faces={[front, back, skillsFace]} />
+          <FlipPreview faces={[front, back]} />
         </S.PreviewSticky>
       </S.PreviewCol>
 
@@ -622,7 +621,7 @@ export default function CreatePage() {
             <S.SheetHandle />
             <S.SheetClose onClick={() => s_sheetOpen(false)}>✕</S.SheetClose>
             <S.SheetCardScaler>
-              <FlipPreview faces={[front, back, skillsFace]} />
+              <FlipPreview faces={[front, back]} />
             </S.SheetCardScaler>
           </S.Sheet>
         </>

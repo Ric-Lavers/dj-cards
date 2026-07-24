@@ -1,7 +1,7 @@
 import { connectToDatabase } from "@/db/mongo/connect"
 import ArtistModel from "@/db/mongo/models/artist.schema"
 import SpecialSkillModel from "@/db/mongo/models/specialSkill.schema"
-import { CardFront, CardBack, SpecialSkillsCard } from "@/component-library"
+import { CardFront, CardBack } from "@/component-library"
 import { DownloadableCard } from "./_components/DownloadableCard"
 import Link from "next/link"
 
@@ -35,10 +35,6 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
 
         <DownloadableCard label="Back" filename={`${slug}-back.png`}>
           <CardBack artist={artist} qrDataUrl={artist.qrCodeUrl} specialSkillsData={specialSkillsData} />
-        </DownloadableCard>
-
-        <DownloadableCard label="Special Skills" filename={`${slug}-special-skills.png`}>
-          <SpecialSkillsCard artist={artist} specialSkillsData={specialSkillsData} />
         </DownloadableCard>
       </div>
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { CardFront, CardBack, SpecialSkillsCard, FlipPreview } from "@/component-library"
+import { CardFront, CardBack, FlipPreview } from "@/component-library"
 import type { ArtistDoc } from "@/db/mongo/models/artist.schema"
 import * as S from "./flip-card.styles"
 
@@ -32,17 +32,11 @@ export const FlipCard = ({ artist, specialSkillsMap }: Props) => {
             specialSkillsData={specialSkillsData}
             instanceId={artist._id}
           />,
-          <SpecialSkillsCard
-            key="skills"
-            artist={artist}
-            specialSkillsData={specialSkillsData}
-            instanceId={artist._id}
-          />,
         ]}
         showHint={false}
       />
       <S.CardNumber>#{String(artist.cardNumber ?? 0).padStart(4, "0")} — {artist.djName}</S.CardNumber>
-      <S.HintTap>tap to cycle</S.HintTap>
+      <S.HintTap>tap to flip</S.HintTap>
     </div>
   )
 }

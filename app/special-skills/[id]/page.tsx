@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/db/mongo/connect"
 import SpecialSkillModel from "@/db/mongo/models/specialSkill.schema"
 import ArtistModel from "@/db/mongo/models/artist.schema"
+import { SkillCardFront, SkillCardBack, FlipPreview } from "@/component-library"
 import { SpecialSkillEditForm } from "./_components/SpecialSkillEditForm"
 import { ArtistSpread } from "./_components/ArtistSpread"
 import Link from "next/link"
@@ -21,9 +22,14 @@ export default async function SpecialSkillDetailPage({ params }: { params: Promi
         <Link href="/special-skills" style={{ color: "#6b6b80", fontSize: "0.85rem" }}>← All special skills</Link>
 
         <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", marginTop: "1.5rem" }}>
-          {skill.largeImage && (
-            <img src={skill.largeImage} alt={skill.name} style={{ width: 220, height: 220, objectFit: "cover", borderRadius: 10, flexShrink: 0 }} />
-          )}
+          <div style={{ width: 175, height: 245, flexShrink: 0, transformOrigin: "top left", transform: "scale(0.5)" }}>
+            <FlipPreview
+              faces={[
+                <SkillCardFront key="front" name={skill.name} largeImage={skill.largeImage} instanceId={skill._id} />,
+                <SkillCardBack key="back" instanceId={skill._id} />,
+              ]}
+            />
+          </div>
           <SpecialSkillEditForm skill={skill} />
         </div>
 

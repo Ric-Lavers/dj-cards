@@ -1,1 +1,1 @@
-export type CardFace = "front" | "back" | "skills"
+export type CardFace = "front" | "back"
