@@ -241,6 +241,15 @@ export const AddGenreBtn = styled.button`
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 `
 
+export const ChipIcon = styled.img`
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+  object-fit: cover;
+`
+
 export const Chip = styled.button<{ $active: boolean; $disabled: boolean }>`
   padding: 0.3rem 0.8rem;
   border-radius: 4px;

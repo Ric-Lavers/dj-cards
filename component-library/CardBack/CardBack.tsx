@@ -35,11 +35,12 @@ function waveformBars(seed: string, count: number, maxH: number) {
 interface Props {
   artist: Partial<ArtistDoc>
   qrDataUrl?: string
+  specialSkillsData?: { name: string; smallImage: string }[]
   instanceId?: string
   squareCorners?: boolean
 }
 
-export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props) => {
+export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squareCorners }: Props) => {
   const uid = instanceId ? `-${instanceId}` : ""
   const r = squareCorners ? 0 : borderRadius
   const { djName, stats, genres, skills, cardNumber, socials } = artist
@@ -263,6 +264,30 @@ export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props
             </g>
           )
         })}
+
+        {/* ── Special Skills (compact) ── */}
+        {(specialSkillsData ?? []).length > 0 && (
+          <>
+            <line x1={12} y1={340} x2={W} y2={340} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
+            {(specialSkillsData ?? []).slice(0, 2).map((skill, i) => (
+              <g key={skill.name} transform={`translate(${18 + i * 160}, 344)`}>
+                <rect width={150} height={24} rx={6} fill="#2a1a40" stroke={theme.colors.gold} strokeWidth={0.75} />
+                <image href={skill.smallImage} x={4} y={2} width={20} height={20} />
+                <text
+                  x={32}
+                  y={13}
+                  fontFamily={theme.fonts.mono}
+                  fontSize={8.5}
+                  fill={theme.colors.gold}
+                  dominantBaseline="middle"
+                  letterSpacing="0.3"
+                >
+                  {skill.name.toUpperCase()}
+                </text>
+              </g>
+            ))}
+          </>
+        )}
 
         {/* ── QR code ── */}
         {qrDataUrl && (

@@ -13,6 +13,7 @@ const Scene = styled.div`
   perspective: 1200px;
   cursor: pointer;
   flex-shrink: 0;
+  position: relative;
 `
 
 const Inner = styled.div<{ $flipped: boolean }>`
@@ -32,6 +33,14 @@ const Face = styled.div<{ $back?: boolean }>`
   ${({ $back }) => $back && css`transform: rotateY(180deg);`}
 `
 
+const FadeFace = styled.div<{ $active: boolean }>`
+  position: absolute;
+  inset: 0;
+  opacity: ${({ $active }) => ($active ? 1 : 0)};
+  transition: opacity 0.35s ease;
+  pointer-events: ${({ $active }) => ($active ? "auto" : "none")};
+`
+
 const Hint = styled.p`
   text-align: center;
   margin-top: 0.4rem;
@@ -42,23 +51,43 @@ const Hint = styled.p`
 `
 
 interface Props {
-  front: React.ReactNode
-  back: React.ReactNode
+  faces: React.ReactNode[]
   showHint?: boolean
 }
 
-export const FlipPreview = ({ front, back, showHint = true }: Props) => {
-  const [flipped, s_flipped] = useState(false)
+// With exactly 2 faces this keeps the original 3D rotateY flip. With 3+ faces
+// (e.g. front/back/special-skills) a true multi-sided flip doesn't read well as
+// a card metaphor, so it cycles through with a crossfade instead.
+export const FlipPreview = ({ faces, showHint = true }: Props) => {
+  const [index, s_index] = useState(0)
+
+  function handleClick() {
+    s_index((i) => (i + 1) % faces.length)
+  }
+
+  if (faces.length === 2) {
+    const flipped = index === 1
+    return (
+      <div>
+        <Scene onClick={handleClick}>
+          <Inner $flipped={flipped}>
+            <Face>{faces[0]}</Face>
+            <Face $back>{faces[1]}</Face>
+          </Inner>
+        </Scene>
+        {showHint && <Hint>{flipped ? "tap to flip back" : "tap to flip"}</Hint>}
+      </div>
+    )
+  }
 
   return (
     <div>
-      <Scene onClick={() => s_flipped(v => !v)}>
-        <Inner $flipped={flipped}>
-          <Face>{front}</Face>
-          <Face $back>{back}</Face>
-        </Inner>
+      <Scene onClick={handleClick}>
+        {faces.map((face, i) => (
+          <FadeFace key={i} $active={i === index}>{face}</FadeFace>
+        ))}
       </Scene>
-      {showHint && <Hint>{flipped ? "tap to flip back" : "tap to flip"}</Hint>}
+      {showHint && <Hint>{index + 1}/{faces.length} · tap to cycle</Hint>}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { connectToDatabase } from "@/db/mongo/connect"
 import ArtistModel from "@/db/mongo/models/artist.schema"
-import { CardFront } from "@/component-library"
-import { CardBack } from "@/component-library"
+import SpecialSkillModel from "@/db/mongo/models/specialSkill.schema"
+import { CardFront, CardBack, SpecialSkillsCard } from "@/component-library"
 import { DownloadableCard } from "./_components/DownloadableCard"
 import Link from "next/link"
 
@@ -12,6 +12,13 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
   if (!raw) return <main style={{ padding: "2rem" }}>Card not found.</main>
   const artist = JSON.parse(JSON.stringify(raw))
   const slug = artist.djName.toLowerCase().replace(/\s+/g, "-")
+
+  const skillDocs = await SpecialSkillModel.find({ name: { $in: artist.specialSkills ?? [] } }).lean()
+  const specialSkillsData = JSON.parse(JSON.stringify(skillDocs)).map((s: any) => ({
+    name: s.name,
+    smallImage: s.smallImage,
+    largeImage: s.largeImage,
+  }))
 
   return (
     <main style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "3rem 1.5rem", gap: "2rem" }}>
@@ -27,7 +34,11 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
         </DownloadableCard>
 
         <DownloadableCard label="Back" filename={`${slug}-back.png`}>
-          <CardBack artist={artist} qrDataUrl={artist.qrCodeUrl} />
+          <CardBack artist={artist} qrDataUrl={artist.qrCodeUrl} specialSkillsData={specialSkillsData} />
+        </DownloadableCard>
+
+        <DownloadableCard label="Special Skills" filename={`${slug}-special-skills.png`}>
+          <SpecialSkillsCard artist={artist} specialSkillsData={specialSkillsData} />
         </DownloadableCard>
       </div>
 

@@ -1,3 +1,5 @@
 export { CardFront } from "./CardFront/CardFront"
 export { CardBack } from "./CardBack/CardBack"
+export { SpecialSkillsCard } from "./SpecialSkillsCard/SpecialSkillsCard"
 export { FlipPreview } from "./FlipPreview/FlipPreview"
+export type { CardFace } from "./types"

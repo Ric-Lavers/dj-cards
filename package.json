@@ -20,6 +20,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-dropzone": "^15.0.0",
+    "sharp": "^0.35.3",
     "styled-components": "^6.4.1",
     "vercel": "^53.3.1"
   },

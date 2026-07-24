@@ -2,10 +2,12 @@
 
 import { memo, useState } from "react"
 import type { ArtistDoc } from "@/db/mongo/models/artist.schema"
-import { CardFront, CardBack } from "@/component-library"
+import { CardFront, CardBack, SpecialSkillsCard } from "@/component-library"
+import type { CardFace } from "@/component-library"
 import * as S from "./print-page.styles"
 
-type Mode = "fronts" | "backs" | "both"
+type Mode = "fronts" | "backs" | "skills" | "both" | "all"
+type SpecialSkillsMap = Record<string, { name: string; smallImage: string; largeImage: string }>
 
 const LAYOUTS = [
   { cols: 2, rows: 2, label: "2 × 2" },
@@ -22,6 +24,12 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 type Artist = Partial<ArtistDoc> & { _id: string }
+
+function resolveSpecialSkills(artist: Artist, specialSkillsMap?: SpecialSkillsMap) {
+  return (artist.specialSkills ?? [])
+    .map((name) => specialSkillsMap?.[name])
+    .filter((s): s is { name: string; smallImage: string; largeImage: string } => !!s)
+}
 
 // Marks positioned relative to BleedCardWrap (the trim edge).
 // Each line extends outward into the bleed with a 1mm gap from the corner,
@@ -48,7 +56,7 @@ function CropMarks() {
   )
 }
 
-const PrintCard = memo(({ artist, face, cutMarks }: { artist: Artist; face: "front" | "back"; cutMarks: boolean }) => (
+const PrintCard = memo(({ artist, face, cutMarks, specialSkillsMap }: { artist: Artist; face: CardFace; cutMarks: boolean; specialSkillsMap?: SpecialSkillsMap }) => (
   <S.CardWrap $cutMarks={cutMarks}>
     {face === "front" ? (
       <CardFront
@@ -58,11 +66,19 @@ const PrintCard = memo(({ artist, face, cutMarks }: { artist: Artist; face: "fro
         instanceId={`print-f-${artist._id}`}
         squareCorners
       />
-    ) : (
+    ) : face === "back" ? (
       <CardBack
         artist={artist}
         qrDataUrl={artist.qrCodeUrl}
+        specialSkillsData={resolveSpecialSkills(artist, specialSkillsMap)}
         instanceId={`print-b-${artist._id}`}
+        squareCorners
+      />
+    ) : (
+      <SpecialSkillsCard
+        artist={artist}
+        specialSkillsData={resolveSpecialSkills(artist, specialSkillsMap)}
+        instanceId={`print-s-${artist._id}`}
         squareCorners
       />
     )}
@@ -72,9 +88,10 @@ PrintCard.displayName = "PrintCard"
 
 interface Props {
   artists: Artist[]
+  specialSkillsMap?: SpecialSkillsMap
 }
 
-export const PrintPage = ({ artists }: Props) => {
+export const PrintPage = ({ artists, specialSkillsMap }: Props) => {
   const [selectedIds, s_selectedIds] = useState<Set<string>>(
     () => new Set(artists.map(a => a._id))
   )
@@ -101,47 +118,69 @@ export const PrintPage = ({ artists }: Props) => {
 
   const frontSheets = chunk(selected, cardsPerSheet)
   const backSheets = chunk(selected, cardsPerSheet)
+  const skillsSheets = chunk(selected, cardsPerSheet)
 
   type SheetEntry = {
     key: string
-    face: "front" | "back"
+    face: CardFace
     label: string
     cards: Artist[]
   }
 
+  const includesFronts = mode === "fronts" || mode === "both" || mode === "all"
+  const includesBacks = mode === "backs" || mode === "both" || mode === "all"
+  const includesSkills = mode === "skills" || mode === "all"
+  const facesIncluded = [includesFronts, includesBacks, includesSkills].filter(Boolean).length
+
   const sheets: SheetEntry[] = []
-  if (mode === "fronts" || mode === "both") {
+  if (includesFronts) {
     frontSheets.forEach((cards, i) =>
       sheets.push({
         key: `front-${i}`,
         face: "front",
-        label: `Fronts — sheet ${i + 1}${mode === "both" ? ` of ${frontSheets.length + backSheets.length}` : ""}`,
+        label: `Fronts — sheet ${i + 1}${facesIncluded > 1 ? ` of ${frontSheets.length * facesIncluded}` : ""}`,
         cards,
       })
     )
   }
-  if (mode === "backs" || mode === "both") {
+  if (includesBacks) {
     backSheets.forEach((cards, i) =>
       sheets.push({
         key: `back-${i}`,
         face: "back",
-        label: `Backs — sheet ${(mode === "both" ? frontSheets.length : 0) + i + 1}${mode === "both" ? ` of ${frontSheets.length + backSheets.length}` : ""}`,
+        label: `Backs — sheet ${(includesFronts ? frontSheets.length : 0) + i + 1}${facesIncluded > 1 ? ` of ${backSheets.length * facesIncluded}` : ""}`,
+        cards,
+      })
+    )
+  }
+  if (includesSkills) {
+    skillsSheets.forEach((cards, i) =>
+      sheets.push({
+        key: `skills-${i}`,
+        face: "skills",
+        label: `Special Skills — sheet ${(includesFronts ? frontSheets.length : 0) + (includesBacks ? backSheets.length : 0) + i + 1}${facesIncluded > 1 ? ` of ${skillsSheets.length * facesIncluded}` : ""}`,
         cards,
       })
     )
   }
 
-  const totalSheets = mode === "both" ? frontSheets.length + backSheets.length : frontSheets.length
+  const totalSheets = frontSheets.length * facesIncluded
 
-  const bleedPages: { artist: Artist; face: "front" | "back"; key: string }[] = []
+  const bleedPages: { artist: Artist; face: CardFace; key: string }[] = []
   if (isSinglePage) {
-    if (mode === "both") {
+    if (mode === "all") {
+      selected.forEach(a => {
+        bleedPages.push({ artist: a, face: "front", key: `bleed-f-${a._id}` })
+        bleedPages.push({ artist: a, face: "back", key: `bleed-b-${a._id}` })
+        bleedPages.push({ artist: a, face: "skills", key: `bleed-s-${a._id}` })
+      })
+    } else if (mode === "both") {
       selected.forEach(a => {
         bleedPages.push({ artist: a, face: "front", key: `bleed-f-${a._id}` })
         bleedPages.push({ artist: a, face: "back", key: `bleed-b-${a._id}` })
       })
     } else {
-      const face = mode === "backs" ? "back" : "front"
+      const face: CardFace = mode === "backs" ? "back" : mode === "skills" ? "skills" : "front"
       selected.forEach(a => bleedPages.push({ artist: a, face, key: `bleed-${face[0]}-${a._id}` }))
     }
   }
@@ -156,7 +195,7 @@ export const PrintPage = ({ artists }: Props) => {
           <S.ControlSection>
             <S.Label>Page type</S.Label>
             <S.ButtonGroup>
-              {(["fronts", "backs", "both"] as Mode[]).map(m => (
+              {(["fronts", "backs", "skills", "both", "all"] as Mode[]).map(m => (
                 <S.ToggleBtn key={m} $active={mode === m} onClick={() => s_mode(m)}>
                   {m}
                 </S.ToggleBtn>
@@ -211,7 +250,7 @@ export const PrintPage = ({ artists }: Props) => {
             {selected.length} card{selected.length !== 1 ? "s" : ""}
             {isSinglePage
               ? ` · ${bleedPages.length} page${bleedPages.length !== 1 ? "s" : ""}`
-              : ` · ${totalSheets} sheet${totalSheets !== 1 ? "s" : ""}${mode === "both" ? ` (${frontSheets.length} fronts + ${backSheets.length} backs)` : ""}`}
+              : ` · ${totalSheets} sheet${totalSheets !== 1 ? "s" : ""}`}
           </S.PreviewMeta>
 
           {selected.length === 0 && <S.Empty>No cards selected.</S.Empty>}
@@ -228,11 +267,19 @@ export const PrintPage = ({ artists }: Props) => {
                         instanceId={`bleed-f-${p.artist._id}`}
                         squareCorners
                       />
-                    ) : (
+                    ) : p.face === "back" ? (
                       <CardBack
                         artist={p.artist}
                         qrDataUrl={p.artist.qrCodeUrl}
+                        specialSkillsData={resolveSpecialSkills(p.artist, specialSkillsMap)}
                         instanceId={`bleed-b-${p.artist._id}`}
+                        squareCorners
+                      />
+                    ) : (
+                      <SpecialSkillsCard
+                        artist={p.artist}
+                        specialSkillsData={resolveSpecialSkills(p.artist, specialSkillsMap)}
+                        instanceId={`bleed-s-${p.artist._id}`}
                         squareCorners
                       />
                     )}
@@ -245,7 +292,7 @@ export const PrintPage = ({ artists }: Props) => {
                   <S.SheetLabel>{sheet.label}</S.SheetLabel>
                   <S.Sheet $cols={layout.cols}>
                     {sheet.cards.map(artist => (
-                      <PrintCard key={artist._id} artist={artist} face={sheet.face} cutMarks={cutMarks} />
+                      <PrintCard key={artist._id} artist={artist} face={sheet.face} cutMarks={cutMarks} specialSkillsMap={specialSkillsMap} />
                     ))}
                   </S.Sheet>
                 </S.SheetContainer>

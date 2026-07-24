@@ -37,6 +37,20 @@ export default function HomePage() {
         >
           View the deck
         </Link>
+        <Link
+          href="/special-skills/create"
+          style={{
+            background: "transparent",
+            color: "#6b6b80",
+            padding: "0.8rem 2.5rem",
+            borderRadius: "6px",
+            fontWeight: 700,
+            fontSize: "1rem",
+            border: "2px solid #2e2e42",
+          }}
+        >
+          Create special skill
+        </Link>
       </div>
     </main>
   )

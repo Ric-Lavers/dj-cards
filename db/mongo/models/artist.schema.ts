@@ -17,6 +17,7 @@ export interface ArtistDoc extends Document {
     danceabilityScale: number
   }
   skills: Skill[]
+  specialSkills: string[]
   cardNumber: number
   qrCodeUrl: string
   socials: {
@@ -51,6 +52,7 @@ const ArtistSchema = new Schema<ArtistDoc>(
       danceabilityScale: { type: Number, min: 0, max: 100, default: 50 },
     },
     skills: [{ type: String }],
+    specialSkills: { type: [String], default: [], validate: (v: string[]) => v.length <= 2 },
     cardNumber: { type: Number },
     qrCodeUrl: { type: String, default: "" },
     socials: {
