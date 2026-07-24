@@ -9,7 +9,8 @@ SKILL: {NAME}
 SCENE: {CONCEPT}
 
 Instructions:
-- Fully commit to the scene described — dynamic action, dramatic lighting, energy and motion.
+- No human figures, people, faces, or hands — depict the moment purely through equipment, sound, light, motion trails and abstract effects.
+- Fully commit to the energy and motion of the scene described, just with no one present.
 - Deep near-black background (#0a0008) with electric purple and gold rim lighting, matching a premium DJ trading-card aesthetic.
 - Subtle cold-blue/violet atmospheric haze for depth, high contrast, cinematic.
 - Bold, centered composition that reads clearly even at small icon sizes. No text, no lettering, no watermarks.`
