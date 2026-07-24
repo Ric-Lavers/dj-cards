@@ -38,9 +38,10 @@ interface Props {
   specialSkillsData?: { name: string; largeImage: string }[]
   instanceId?: string
   squareCorners?: boolean
+  onQrClick?: () => void
 }
 
-export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squareCorners }: Props) => {
+export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squareCorners, onQrClick }: Props) => {
   const uid = instanceId ? `-${instanceId}` : ""
   const r = squareCorners ? 0 : borderRadius
   const { djName, stats, genres, skills, cardNumber, socials } = artist
@@ -273,10 +274,10 @@ export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squ
 
         {/* ── Special Skills (large icons, up to 2) ── */}
         {hasSpecialSkills && (() => {
-          const dividerY = 288
-          const iconSize = 64
+          const dividerY = 296
+          const iconSize = 58
           const iconGap = 20
-          const iconY = dividerY + 16
+          const iconY = dividerY + 22
           const colWidth = (W - 24 - iconGap) / 2
           return (
             <>
@@ -300,7 +301,7 @@ export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squ
                     />
                     <text
                       x={colX + colWidth / 2}
-                      y={iconY + iconSize + 14}
+                      y={iconY + iconSize + 18}
                       fontFamily={theme.fonts.mono}
                       fontSize={8.5}
                       fill={theme.colors.gold}
@@ -317,23 +318,30 @@ export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squ
         })()}
 
         {/* ── QR code ── */}
-        {qrDataUrl && (
-          <g transform={`translate(${W - 90}, ${H - 105})`}>
-            <rect width={76} height={76} rx={6} fill="#fff" />
-            <image href={qrDataUrl} x={4} y={4} width={68} height={68} />
-            <text
-              x={38}
-              y={90}
-              fontFamily={theme.fonts.mono}
-              fontSize={7}
-              fill={theme.colors.muted}
-              textAnchor="middle"
-              letterSpacing="1"
+        {qrDataUrl && (() => {
+          const qrSize = hasSpecialSkills ? 64 : 76
+          const qrY = hasSpecialSkills ? H - 90 : H - 105
+          return (
+            <g
+              transform={`translate(${W - 14 - qrSize}, ${qrY})`}
+              onClick={onQrClick ? (e) => { e.stopPropagation(); onQrClick() } : undefined}
             >
-              ARTIST PROFILE
-            </text>
-          </g>
-        )}
+              <rect width={qrSize} height={qrSize} rx={6} fill="#fff" />
+              <image href={qrDataUrl} x={4} y={4} width={qrSize - 8} height={qrSize - 8} />
+              <text
+                x={qrSize / 2}
+                y={qrSize + 14}
+                fontFamily={theme.fonts.mono}
+                fontSize={7}
+                fill={theme.colors.muted}
+                textAnchor="middle"
+                letterSpacing="1"
+              >
+                ARTIST PROFILE
+              </text>
+            </g>
+          )
+        })()}
 
         {/* ── Bottom waveform decoration ── */}
         {bars.map((barH, i) => (

@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { CardFront, CardBack, FlipPreview } from "@/component-library"
 import type { ArtistDoc } from "@/db/mongo/models/artist.schema"
 import * as S from "./flip-card.styles"
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export const FlipCard = ({ artist, specialSkillsMap }: Props) => {
+  const router = useRouter()
   const specialSkillsData = (artist.specialSkills ?? [])
     .map((name) => specialSkillsMap?.[name])
     .filter((s): s is { name: string; smallImage: string; largeImage: string } => !!s)
@@ -31,6 +33,7 @@ export const FlipCard = ({ artist, specialSkillsMap }: Props) => {
             qrDataUrl={artist.qrCodeUrl}
             specialSkillsData={specialSkillsData}
             instanceId={artist._id}
+            onQrClick={() => router.push(`/card/${artist._id}/edit`)}
           />,
         ]}
         showHint={false}
