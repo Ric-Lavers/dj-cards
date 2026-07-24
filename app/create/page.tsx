@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useCallback, useEffect, useRef, memo } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useDropzone } from "react-dropzone"
+import { AxiosError } from "axios"
 import * as S from "./_components/create-page.styles"
 import { CardFront, CardBack, SpecialSkillsCard, FlipPreview } from "@/component-library"
 import api from "@/utils/api"
@@ -171,8 +172,9 @@ export default function CreatePage() {
       const existingNames = specialSkillsCatalog.map((s) => s.name)
       const created = await api.post("/special-skills/invent", { existingNames }) as unknown as SpecialSkillOption[]
       s_specialSkillsCatalog((prev) => [...prev, ...created])
-    } catch (err: any) {
-      s_inventError(err?.response?.data?.error ?? "Couldn't invent new special skills — try again.")
+    } catch (err) {
+      const message = err instanceof AxiosError ? (err.response?.data?.error as string | undefined) : undefined
+      s_inventError(message ?? "Couldn't invent new special skills — try again.")
     } finally {
       s_inventingSkills(false)
     }

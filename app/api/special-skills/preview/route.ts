@@ -19,21 +19,22 @@ export async function POST(req: NextRequest) {
     const smallUrl = `data:image/png;base64,${small.toString("base64")}`
 
     return NextResponse.json({ largeUrl, smallUrl, sourcePhoto })
-  } catch (err: any) {
-    if (err?.code === "billing_hard_limit_reached") {
+  } catch (err) {
+    const e = err as { code?: string; status?: number; response?: { status?: number }; message?: string }
+    if (e?.code === "billing_hard_limit_reached") {
       return NextResponse.json(
         { error: "AI processing is temporarily unavailable — the service has hit its usage limit. Please try again later." },
         { status: 503 }
       )
     }
-    if (err?.code === "moderation_blocked") {
+    if (e?.code === "moderation_blocked") {
       return NextResponse.json(
         { error: "That concept was flagged by OpenAI's safety system. Try a different image or wording." },
         { status: 422 }
       )
     }
-    const status = err?.status ?? err?.response?.status
-    if (status === 413 || status === 403 || err?.message?.toLowerCase().includes("too large")) {
+    const status = e?.status ?? e?.response?.status
+    if (status === 413 || status === 403 || e?.message?.toLowerCase().includes("too large")) {
       return NextResponse.json(
         { error: "Your image is too large — please use an image under 4 MB." },
         { status: 413 }

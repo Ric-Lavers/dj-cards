@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useDropzone } from "react-dropzone"
+import { AxiosError } from "axios"
 import * as S from "@/app/create/_components/create-page.styles"
 import api from "@/utils/api"
 
@@ -52,8 +53,9 @@ export default function CreateSpecialSkillPage() {
       const result = await api.post("/special-skills/preview", fd) as { largeUrl: string; smallUrl: string; sourcePhoto: string; error?: string }
       if (result.error) { s_generateError(result.error); return }
       s_preview(result)
-    } catch (err: any) {
-      s_generateError(err?.response?.data?.error ?? "Something went wrong — try again.")
+    } catch (err) {
+      const message = err instanceof AxiosError ? (err.response?.data?.error as string | undefined) : undefined
+      s_generateError(message ?? "Something went wrong — try again.")
     } finally {
       s_generating(false)
     }
@@ -73,8 +75,9 @@ export default function CreateSpecialSkillPage() {
       }) as { _id: string; error?: string }
       if (skill.error) { s_saveError(skill.error); return }
       router.push(`/special-skills/${skill._id}`)
-    } catch (err: any) {
-      s_saveError(err?.response?.data?.error ?? "Something went wrong — try again.")
+    } catch (err) {
+      const message = err instanceof AxiosError ? (err.response?.data?.error as string | undefined) : undefined
+      s_saveError(message ?? "Something went wrong — try again.")
     } finally {
       s_saving(false)
     }

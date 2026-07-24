@@ -31,7 +31,7 @@ export default async function SpecialSkillsPage() {
           gap: "1.5rem",
           padding: "2rem",
         }}>
-          {skills.map((skill: any) => (
+          {skills.map((skill: { _id: string; name: string; largeImage: string; invented: boolean }) => (
             <Link
               key={skill._id}
               href={`/special-skills/${skill._id}`}
