@@ -8,7 +8,7 @@ export default function HomePage() {
         <ElectronDanceLogo x={0} y={0} width={260} height={260} text="DJ Cards" />
       </div>
       <p style={{ color: "#6b6b80", fontSize: "1.1rem" }}>
-        Your DJ. A card. Like a baseball card, but better.
+        Turn your DJ profile into a collectible trading card.
       </p>
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
         <Link
