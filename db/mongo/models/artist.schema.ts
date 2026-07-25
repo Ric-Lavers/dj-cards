@@ -5,6 +5,7 @@ export type Skill = "scratching" | "long_mixes" | "vinyl" | "cdjs" | "ableton" |
 
 export interface ArtistDoc extends Document {
   djName: string
+  photo: string
   editedPhoto: string
   poseChoice: PoseChoice
   customPose: string
@@ -36,6 +37,7 @@ export interface ArtistDoc extends Document {
 const ArtistSchema = new Schema<ArtistDoc>(
   {
     djName: { type: String, required: true },
+    photo: { type: String, default: "" },
     editedPhoto: { type: String, default: "" },
     poseChoice: {
       type: String,

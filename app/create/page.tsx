@@ -288,6 +288,7 @@ export default function CreatePage() {
         poseChoice: form.poseChoice,
         customPose: form.customPose,
         genres: form.genres,
+        photo: photoPreview ?? "",
         editedPhoto: editedPhoto ?? "",
         stats: {
           yearsPlaying: form.yearsPlaying,
