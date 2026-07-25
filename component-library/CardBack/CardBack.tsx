@@ -276,17 +276,14 @@ export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squ
         {hasSpecialSkills && (() => {
           const dividerY = 296
           const iconSize = 58
-          const iconGap = 20
+          const iconGap = 14
           const iconY = dividerY + 22
-          const colWidth = (W - 24 - iconGap) / 2
+          const startX = 18
           return (
             <>
               <line x1={12} y1={dividerY} x2={W} y2={dividerY} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
               {specialSkills.map((skill, i) => {
-                const colX = specialSkills.length === 1
-                  ? W / 2 - colWidth / 2
-                  : 12 + i * (colWidth + iconGap)
-                const iconX = colX + (colWidth - iconSize) / 2
+                const iconX = startX + i * (iconSize + iconGap)
                 return (
                   <g key={skill.name}>
                     <rect x={iconX - 3} y={iconY - 3} width={iconSize + 6} height={iconSize + 6} rx={10} fill="#2a1a40" stroke={theme.colors.gold} strokeWidth={1} />
@@ -300,7 +297,7 @@ export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squ
                       clipPath={`url(#back-skill-icon-clip${uid})`}
                     />
                     <text
-                      x={colX + colWidth / 2}
+                      x={iconX + iconSize / 2}
                       y={iconY + iconSize + 18}
                       fontFamily={theme.fonts.mono}
                       fontSize={8.5}
