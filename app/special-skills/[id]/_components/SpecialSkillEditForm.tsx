@@ -13,6 +13,7 @@ interface SkillData {
 export const SpecialSkillEditForm = ({ skill }: { skill: SkillData }) => {
   const [name, s_name] = useState(skill.name)
   const [prompt, s_prompt] = useState(skill.prompt)
+  const [includeEquipment, s_includeEquipment] = useState(true)
   const [saving, s_saving] = useState(false)
   const [saveError, s_saveError] = useState<string | null>(null)
   const [saved, s_saved] = useState(false)
@@ -46,6 +47,7 @@ export const SpecialSkillEditForm = ({ skill }: { skill: SkillData }) => {
       const result = (await api.post("/special-skills/preview", {
         name: name.trim(),
         prompt: prompt.trim(),
+        includeEquipment,
       })) as { largeUrl: string; smallUrl: string; error?: string }
       if (result.error) {
         s_regenError(result.error)
@@ -103,6 +105,16 @@ export const SpecialSkillEditForm = ({ skill }: { skill: SkillData }) => {
         <label style={labelStyle}>PROMPT</label>
         <textarea value={prompt} onChange={(e) => s_prompt(e.target.value)} rows={4} style={{ ...inputStyle, resize: "vertical" }} />
       </div>
+
+      <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+        <input
+          type="checkbox"
+          checked={includeEquipment}
+          onChange={(e) => s_includeEquipment(e.target.checked)}
+          style={{ accentColor: "#c9a84c" }}
+        />
+        <span style={labelStyle}>INCLUDE DJ EQUIPMENT IN THE ICON</span>
+      </label>
 
       {saveError && <p style={{ color: "#ff6b6b", fontSize: "0.8rem" }}>{saveError}</p>}
       {saved && <p style={{ color: "#4ade80", fontSize: "0.8rem" }}>Saved.</p>}

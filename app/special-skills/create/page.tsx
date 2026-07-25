@@ -10,6 +10,7 @@ export default function CreateSpecialSkillPage() {
   const router = useRouter()
   const [name, s_name] = useState("")
   const [prompt, s_prompt] = useState("")
+  const [includeEquipment, s_includeEquipment] = useState(true)
   const [generating, s_generating] = useState(false)
   const [generateError, s_generateError] = useState<string | null>(null)
   const [preview, s_preview] = useState<{ largeUrl: string; smallUrl: string } | null>(null)
@@ -28,6 +29,7 @@ export default function CreateSpecialSkillPage() {
       const result = await api.post("/special-skills/preview", {
         name: name.trim(),
         prompt: prompt.trim(),
+        includeEquipment,
       }) as { largeUrl: string; smallUrl: string; error?: string }
       if (result.error) { s_generateError(result.error); return }
       s_preview(result)
@@ -81,6 +83,18 @@ export default function CreateSpecialSkillPage() {
             placeholder="Describe the moment — what happens, how it feels, the energy in the room."
             rows={4}
           />
+        </S.Section>
+
+        <S.Section>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={includeEquipment}
+              onChange={(e) => s_includeEquipment(e.target.checked)}
+              style={{ accentColor: "#c9a84c" }}
+            />
+            <span style={{ color: "#6b6b80", fontSize: "0.85rem" }}>Include DJ equipment in the icon</span>
+          </label>
         </S.Section>
 
         {generateError && <S.PhotoError>{generateError}</S.PhotoError>}

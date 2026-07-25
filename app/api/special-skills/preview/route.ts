@@ -6,10 +6,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const name = ((body.name as string) ?? "").trim()
     const prompt = (body.prompt as string) ?? ""
+    const includeEquipment = body.includeEquipment !== false
 
     if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 })
 
-    const { large, small } = await generateSpecialSkillIcon(name, prompt)
+    const { large, small } = await generateSpecialSkillIcon(name, prompt, includeEquipment)
 
     const largeUrl = `data:image/png;base64,${large.toString("base64")}`
     const smallUrl = `data:image/png;base64,${small.toString("base64")}`

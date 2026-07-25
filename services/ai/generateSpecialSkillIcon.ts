@@ -9,15 +9,18 @@ SKILL: {NAME}
 SCENE: {CONCEPT}
 
 Instructions:
-- No human figures, people, faces, or hands — depict the moment purely through equipment, sound, light, motion trails and abstract effects.
+- No human figures, people, faces, or hands — depict the moment purely through {ELEMENTS}.
 - Fully commit to the energy and motion of the scene described, just with no one present.
 - Deep near-black background (#0a0008) with electric purple and gold rim lighting, matching a premium DJ trading-card aesthetic.
 - Subtle cold-blue/violet atmospheric haze for depth, high contrast, cinematic.
 - Bold, centered composition that reads clearly even at small icon sizes. No text, no lettering, no watermarks.`
 
-export async function generateSpecialSkillIcon(name: string, prompt?: string): Promise<{ large: Buffer; small: Buffer }> {
+export async function generateSpecialSkillIcon(name: string, prompt?: string, includeEquipment = true): Promise<{ large: Buffer; small: Buffer }> {
   const concept = prompt?.trim() || name
-  const finalPrompt = SPECIAL_SKILL_ICON_PROMPT.replace("{NAME}", name).replace("{CONCEPT}", concept)
+  const elements = includeEquipment
+    ? "equipment, sound, light, motion trails and abstract effects"
+    : "sound, light, motion trails and abstract effects — no DJ equipment, turntables, mixers, or gear of any kind"
+  const finalPrompt = SPECIAL_SKILL_ICON_PROMPT.replace("{NAME}", name).replace("{CONCEPT}", concept).replace("{ELEMENTS}", elements)
 
   const response = await client.images.generate({
     model: "gpt-image-1",
