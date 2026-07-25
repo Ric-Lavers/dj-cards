@@ -7,30 +7,35 @@ export const Empty = styled.p`
 `
 
 export const Spread = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  padding: 0.5rem 0 1rem;
+  position: relative;
+  padding: 0.5rem 0 1.5rem 1.25rem;
 
   @media screen and (width >= ${theme.breakpoints.md}) {
-    display: block;
-    position: relative;
     height: 230px;
-    padding-left: 8px;
+    padding: 0.5rem 0 1rem 8px;
   }
 `
 
 export const Tile = styled.div<{ $index: number; $active: boolean }>`
   position: relative;
-  width: 44%;
-  flex-shrink: 0;
+  width: 58%;
+  max-width: 175px;
   cursor: pointer;
   transition: transform 0.2s ease;
   z-index: ${({ $active }) => ($active ? 50 : 1)};
+  margin-top: ${({ $index }) => ($index === 0 ? 0 : "-165px")};
+  transform: rotate(${({ $index }) => ($index % 2 === 0 ? -3 : 3)}deg);
+
+  &:hover {
+    z-index: 40;
+    transform: rotate(0deg) translateX(16px);
+  }
 
   @media screen and (width >= ${theme.breakpoints.md}) {
     position: absolute;
     width: 130px;
+    max-width: none;
+    margin-top: 0;
     left: ${({ $index }) => $index * 68}px;
     top: 0;
     transform: rotate(${({ $index }) => ($index % 2 === 0 ? -4 : 4)}deg);
@@ -44,7 +49,8 @@ export const Tile = styled.div<{ $index: number; $active: boolean }>`
   ${({ $active }) =>
     $active &&
     `
-    transform: translateY(-10px) rotate(0deg) scale(1.05) !important;
+    transform: rotate(0deg) scale(1.06) !important;
+    z-index: 50 !important;
   `}
 `
 
