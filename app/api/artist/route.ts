@@ -21,12 +21,14 @@ export async function POST(req: NextRequest) {
     const inviteToken = InviteFlow.getToken(jar)
     const invite = inviteToken ? await InviteFlow.fromToken(inviteToken) : null
 
-    // Upload edited photo to Blob if still base64
+    // Upload original + edited photo to Blob if still base64
+    const photo = body.photo ? await ensureBlobUrl(body.photo, `original/${uid}-original.png`) : ""
     const editedPhoto = await ensureBlobUrl(body.editedPhoto ?? "", `edited/${uid}-edited.png`)
 
     const cardNumber = await generateCardNumber()
     const artist = await ArtistModel.create({
       ...body,
+      photo,
       editedPhoto,
       cardNumber,
       invitedBy: invite?.invitedBy ?? null,

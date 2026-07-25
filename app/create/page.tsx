@@ -1,12 +1,15 @@
 "use client"
 
-import { useState, useCallback, useEffect, useRef, memo } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useDropzone } from "react-dropzone"
+import { AxiosError } from "axios"
 import * as S from "./_components/create-page.styles"
 import { CardFront, CardBack, FlipPreview } from "@/component-library"
 import api from "@/utils/api"
 import type { PoseChoice, Skill } from "@/db/mongo/models/artist.schema"
+
+type SpecialSkillOption = { _id: string; name: string; smallImage: string; largeImage: string }
 
 const POSES: { value: PoseChoice; label: string; emoji: string }[] = [
   { value: "hands_in_air",  label: "Hands in the Air", emoji: "🙌" },
@@ -43,6 +46,7 @@ const defaultForm = {
   bpm: 128,
   danceabilityScale: 50,
   skills: [] as Skill[],
+  specialSkills: [] as string[],
   instagram: "",
   soundcloud: "",
   email: "",
@@ -66,6 +70,9 @@ export default function CreatePage() {
   const [newGenre, s_newGenre] = useState("")
   const [addingGenre, s_addingGenre] = useState(false)
   const [newSkill, s_newSkill] = useState("")
+  const [specialSkillsCatalog, s_specialSkillsCatalog] = useState<SpecialSkillOption[]>([])
+  const [inventingSkills, s_inventingSkills] = useState(false)
+  const [inventError, s_inventError] = useState<string | null>(null)
   const chipsRef = useRef<HTMLDivElement>(null)
   const [sheetOpen, s_sheetOpen] = useState(false)
   const [showPeek, s_showPeek] = useState(false)
@@ -73,6 +80,10 @@ export default function CreatePage() {
 
   useEffect(() => {
     api.get("/genres").then((data) => s_genres(data as unknown as string[])).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    api.get("/special-skills").then((data) => s_specialSkillsCatalog(data as unknown as SpecialSkillOption[])).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -143,6 +154,30 @@ export default function CreatePage() {
       const has = prev.skills.includes(skill)
       return { ...prev, skills: has ? prev.skills.filter((s) => s !== skill) : [...prev.skills, skill] }
     })
+  }
+
+  function toggleSpecialSkill(name: string) {
+    s_form((prev) => {
+      const has = prev.specialSkills.includes(name)
+      if (has) return { ...prev, specialSkills: prev.specialSkills.filter((s) => s !== name) }
+      if (prev.specialSkills.length >= 2) return prev
+      return { ...prev, specialSkills: [...prev.specialSkills, name] }
+    })
+  }
+
+  async function handleInventSkills() {
+    s_inventingSkills(true)
+    s_inventError(null)
+    try {
+      const existingNames = specialSkillsCatalog.map((s) => s.name)
+      const created = await api.post("/special-skills/invent", { existingNames }) as unknown as SpecialSkillOption[]
+      s_specialSkillsCatalog((prev) => [...prev, ...created])
+    } catch (err) {
+      const message = err instanceof AxiosError ? (err.response?.data?.error as string | undefined) : undefined
+      s_inventError(message ?? "Couldn't invent new special skills — try again.")
+    } finally {
+      s_inventingSkills(false)
+    }
   }
 
   async function resizeImage(file: File): Promise<File> {
@@ -253,6 +288,7 @@ export default function CreatePage() {
         poseChoice: form.poseChoice,
         customPose: form.customPose,
         genres: form.genres,
+        photo: photoPreview ?? "",
         editedPhoto: editedPhoto ?? "",
         stats: {
           yearsPlaying: form.yearsPlaying,
@@ -262,6 +298,7 @@ export default function CreatePage() {
           danceabilityScale: form.danceabilityScale,
         },
         skills: form.skills,
+        specialSkills: form.specialSkills,
         socials: { instagram: form.instagram, soundcloud: form.soundcloud },
         contactDetails: { email: form.email, phone: form.phone, address: form.address },
       }
@@ -280,6 +317,7 @@ export default function CreatePage() {
     genres: form.genres as [string, string],
     poseChoice: form.poseChoice,
     skills: form.skills,
+    specialSkills: form.specialSkills,
     socials: { instagram: form.instagram, soundcloud: form.soundcloud },
     stats: {
       yearsPlaying: form.yearsPlaying,
@@ -290,8 +328,13 @@ export default function CreatePage() {
     },
   }
 
+  const specialSkillsData = form.specialSkills
+    .map((name) => specialSkillsCatalog.find((s) => s.name === name))
+    .filter((s): s is SpecialSkillOption => !!s)
+    .map((s) => ({ name: s.name, smallImage: s.smallImage, largeImage: s.largeImage }))
+
   const front = <CardFront djName={form.djName} editedPhoto={editedPhoto ?? photoPreview ?? undefined} />
-  const back = <CardBack artist={previewArtist} />
+  const back = <CardBack artist={previewArtist} specialSkillsData={specialSkillsData} />
 
   return (
     <S.Page>
@@ -481,6 +524,30 @@ export default function CreatePage() {
           </S.Section>
 
           <S.Section>
+            <S.Label>Special Skills (pick 2)</S.Label>
+            <S.ChipGroup>
+              {specialSkillsCatalog.map(({ name, smallImage }) => (
+                <S.Chip
+                  key={name}
+                  $active={form.specialSkills.includes(name)}
+                  $disabled={!form.specialSkills.includes(name) && form.specialSkills.length >= 2}
+                  onClick={() => toggleSpecialSkill(name)}
+                  type="button"
+                >
+                  {smallImage && <S.ChipIcon src={smallImage} alt="" />}
+                  {name}
+                </S.Chip>
+              ))}
+            </S.ChipGroup>
+            <S.AddGenreRow>
+              <S.AddGenreBtn type="button" onClick={handleInventSkills} disabled={inventingSkills}>
+                {inventingSkills ? "Inventing..." : "+3 special skills"}
+              </S.AddGenreBtn>
+            </S.AddGenreRow>
+            {inventError && <S.PhotoError>{inventError}</S.PhotoError>}
+          </S.Section>
+
+          <S.Section>
             <S.Label>Socials</S.Label>
             <S.Input
               value={form.instagram}
@@ -522,7 +589,7 @@ export default function CreatePage() {
           {/* ── Mobile inline preview (bottom of form, above submit) ── */}
           <S.MobileInlinePreview ref={inlinePreviewRef}>
             <S.InlinePreviewScaler>
-              <FlipPreview front={front} back={back} />
+              <FlipPreview faces={[front, back]} />
             </S.InlinePreviewScaler>
           </S.MobileInlinePreview>
 
@@ -536,7 +603,7 @@ export default function CreatePage() {
       {/* ── Desktop preview (right column, hidden on mobile) ── */}
       <S.PreviewCol>
         <S.PreviewSticky>
-          <FlipPreview front={front} back={back} />
+          <FlipPreview faces={[front, back]} />
         </S.PreviewSticky>
       </S.PreviewCol>
 
@@ -555,7 +622,7 @@ export default function CreatePage() {
             <S.SheetHandle />
             <S.SheetClose onClick={() => s_sheetOpen(false)}>✕</S.SheetClose>
             <S.SheetCardScaler>
-              <FlipPreview front={front} back={back} />
+              <FlipPreview faces={[front, back]} />
             </S.SheetCardScaler>
           </S.Sheet>
         </>

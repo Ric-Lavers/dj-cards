@@ -1,13 +1,14 @@
 import Link from "next/link"
+import { ElectronDanceLogo } from "@/component-library"
 
 export default function HomePage() {
   return (
     <main style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "1.5rem", padding: "2rem" }}>
-      <h1 style={{ fontSize: "3rem", fontWeight: 900, fontFamily: "'Arial Black', sans-serif" }}>
-        DJ Cards
-      </h1>
+      <div style={{ width: 260, height: 260 }}>
+        <ElectronDanceLogo x={0} y={0} width={260} height={260} text="DJ Cards" />
+      </div>
       <p style={{ color: "#6b6b80", fontSize: "1.1rem" }}>
-        Your DJ. A card. Like a baseball card, but better.
+        Turn your DJ profile into a collectible trading card.
       </p>
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
         <Link
@@ -36,6 +37,20 @@ export default function HomePage() {
           }}
         >
           View the deck
+        </Link>
+        <Link
+          href="/special-skills/create"
+          style={{
+            background: "transparent",
+            color: "#6b6b80",
+            padding: "0.8rem 2.5rem",
+            borderRadius: "6px",
+            fontWeight: 700,
+            fontSize: "1rem",
+            border: "2px solid #2e2e42",
+          }}
+        >
+          Create special skill
         </Link>
       </div>
     </main>

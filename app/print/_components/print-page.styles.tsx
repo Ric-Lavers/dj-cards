@@ -3,10 +3,41 @@
 import styled, { createGlobalStyle } from "styled-components"
 import { theme } from "@/styles/theme"
 
+export const FlowTabs = styled.div`
+  display: flex;
+  gap: 0.4rem;
+  @media print { display: none; }
+`
+
+export const FlowTab = styled.a<{ $active: boolean }>`
+  flex: 1;
+  text-align: center;
+  padding: 0.4rem;
+  border-radius: 4px;
+  font-family: ${theme.fonts.mono};
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border: 1px solid ${(p) => (p.$active ? theme.colors.gold : theme.colors.border)};
+  background: ${(p) => (p.$active ? "#1c1409" : "transparent")};
+  color: ${(p) => (p.$active ? theme.colors.gold : theme.colors.muted)};
+`
+
 export const PrintGlobal = createGlobalStyle`
   @page { margin: 10mm; }
   @media print {
     body { background: white !important; }
+    * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  }
+`
+
+export const BleedGlobal = createGlobalStyle`
+  @page {
+    size: 2.92in 3.92in;
+    margin: 0;
+  }
+  @media print {
+    body { background: #0a0008 !important; }
     * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   }
 `
@@ -226,4 +257,49 @@ export const Empty = styled.div`
   font-family: ${theme.fonts.mono};
   font-size: 0.85rem;
   color: ${theme.colors.muted};
+`
+
+export const BleedSheet = styled.div<{ $last: boolean }>`
+  position: relative;
+  background: #0a0008;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* screen: card + 20px bleed on each side (fits 4mm marks + 1mm gap) */
+  width: 390px;
+  height: 530px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.9);
+  margin-bottom: 1.5rem;
+
+  @media print {
+    width: 2.875in;
+    height: 3.875in;
+    margin: 0;
+    box-shadow: none;
+    ${p => !p.$last && "break-after: page;"}
+  }
+`
+
+export const BleedCardWrap = styled.div`
+  position: relative;
+  width: 350px;
+  height: 490px;
+
+  svg {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+  }
+
+  @media print {
+    width: 2.5in;
+    height: 3.5in;
+  }
+`
+
+export const Mark = styled.div`
+  position: absolute;
+  background: rgba(255, 255, 255, 0.65);
 `

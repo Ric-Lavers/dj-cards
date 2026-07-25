@@ -1,3 +1,7 @@
 export { CardFront } from "./CardFront/CardFront"
 export { CardBack } from "./CardBack/CardBack"
+export { SkillCardFront } from "./SkillCard/SkillCardFront"
+export { SkillCardBack } from "./SkillCard/SkillCardBack"
+export { ElectronDanceLogo } from "./SkillCard/ElectronDanceLogo"
 export { FlipPreview } from "./FlipPreview/FlipPreview"
+export type { CardFace } from "./types"

@@ -2,12 +2,11 @@
 
 import { memo, useState } from "react"
 import Link from "next/link"
-import type { ArtistDoc } from "@/db/mongo/models/artist.schema"
-import { CardFront, CardBack } from "@/component-library"
-import * as S from "./print-page.styles"
+import { SkillCardFront, SkillCardBack } from "@/component-library"
+import * as S from "../../_components/print-page.styles"
 
 type Mode = "fronts" | "backs" | "both"
-type SpecialSkillsMap = Record<string, { name: string; smallImage: string; largeImage: string }>
+type Skill = { _id: string; name: string; largeImage: string }
 
 const LAYOUTS = [
   { cols: 2, rows: 2, label: "2 × 2" },
@@ -23,70 +22,43 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return out
 }
 
-type Artist = Partial<ArtistDoc> & { _id: string }
-
-function resolveSpecialSkills(artist: Artist, specialSkillsMap?: SpecialSkillsMap) {
-  return (artist.specialSkills ?? [])
-    .map((name) => specialSkillsMap?.[name])
-    .filter((s): s is { name: string; smallImage: string; largeImage: string } => !!s)
-}
-
 // Marks positioned relative to BleedCardWrap (the trim edge).
-// Each line extends outward into the bleed with a 1mm gap from the corner,
-// so the H and V lines at each corner never touch.
 function CropMarks() {
   const gap = "1mm"
   const len = "4mm"
   const thick = "0.75px"
   return (
     <>
-      {/* top-left: H extends left, V extends up */}
       <S.Mark style={{ top: 0, right: `calc(100% + ${gap})`, width: len, height: thick }} />
       <S.Mark style={{ right: "100%", bottom: `calc(100% + ${gap})`, width: thick, height: len }} />
-      {/* top-right: H extends right, V extends up */}
       <S.Mark style={{ top: 0, left: `calc(100% + ${gap})`, width: len, height: thick }} />
       <S.Mark style={{ left: "100%", bottom: `calc(100% + ${gap})`, width: thick, height: len }} />
-      {/* bottom-left: H extends left, V extends down */}
       <S.Mark style={{ bottom: 0, right: `calc(100% + ${gap})`, width: len, height: thick }} />
       <S.Mark style={{ right: "100%", top: `calc(100% + ${gap})`, width: thick, height: len }} />
-      {/* bottom-right: H extends right, V extends down */}
       <S.Mark style={{ bottom: 0, left: `calc(100% + ${gap})`, width: len, height: thick }} />
       <S.Mark style={{ left: "100%", top: `calc(100% + ${gap})`, width: thick, height: len }} />
     </>
   )
 }
 
-const PrintCard = memo(({ artist, face, cutMarks, specialSkillsMap }: { artist: Artist; face: "front" | "back"; cutMarks: boolean; specialSkillsMap?: SpecialSkillsMap }) => (
+const PrintSkillCard = memo(({ skill, face, cutMarks }: { skill: Skill; face: "front" | "back"; cutMarks: boolean }) => (
   <S.CardWrap $cutMarks={cutMarks}>
     {face === "front" ? (
-      <CardFront
-        djName={artist.djName ?? ""}
-        editedPhoto={artist.editedPhoto}
-        cardNumber={artist.cardNumber}
-        instanceId={`print-f-${artist._id}`}
-        squareCorners
-      />
+      <SkillCardFront name={skill.name} largeImage={skill.largeImage} instanceId={`print-f-${skill._id}`} squareCorners />
     ) : (
-      <CardBack
-        artist={artist}
-        qrDataUrl={artist.qrCodeUrl}
-        specialSkillsData={resolveSpecialSkills(artist, specialSkillsMap)}
-        instanceId={`print-b-${artist._id}`}
-        squareCorners
-      />
+      <SkillCardBack instanceId={`print-b-${skill._id}`} squareCorners />
     )}
   </S.CardWrap>
 ))
-PrintCard.displayName = "PrintCard"
+PrintSkillCard.displayName = "PrintSkillCard"
 
 interface Props {
-  artists: Artist[]
-  specialSkillsMap?: SpecialSkillsMap
+  skills: Skill[]
 }
 
-export const PrintPage = ({ artists, specialSkillsMap }: Props) => {
+export const SkillPrintPage = ({ skills }: Props) => {
   const [selectedIds, s_selectedIds] = useState<Set<string>>(
-    () => new Set(artists.map(a => a._id))
+    () => new Set(skills.map(s => s._id))
   )
   const [mode, s_mode] = useState<Mode>("fronts")
   const [layoutIdx, s_layoutIdx] = useState(2)
@@ -95,7 +67,7 @@ export const PrintPage = ({ artists, specialSkillsMap }: Props) => {
   const layout = LAYOUTS[layoutIdx]
   const isSinglePage = layout.cols === 1 && layout.rows === 1
   const cardsPerSheet = layout.cols * layout.rows
-  const selected = artists.filter(a => selectedIds.has(a._id))
+  const selected = skills.filter(s => selectedIds.has(s._id))
 
   function toggleId(id: string) {
     s_selectedIds(prev => {
@@ -106,18 +78,13 @@ export const PrintPage = ({ artists, specialSkillsMap }: Props) => {
     })
   }
 
-  function selectAll() { s_selectedIds(new Set(artists.map(a => a._id))) }
+  function selectAll() { s_selectedIds(new Set(skills.map(s => s._id))) }
   function selectNone() { s_selectedIds(new Set()) }
 
   const frontSheets = chunk(selected, cardsPerSheet)
   const backSheets = chunk(selected, cardsPerSheet)
 
-  type SheetEntry = {
-    key: string
-    face: "front" | "back"
-    label: string
-    cards: Artist[]
-  }
+  type SheetEntry = { key: string; face: "front" | "back"; label: string; cards: Skill[] }
 
   const sheets: SheetEntry[] = []
   if (mode === "fronts" || mode === "both") {
@@ -143,16 +110,16 @@ export const PrintPage = ({ artists, specialSkillsMap }: Props) => {
 
   const totalSheets = mode === "both" ? frontSheets.length + backSheets.length : frontSheets.length
 
-  const bleedPages: { artist: Artist; face: "front" | "back"; key: string }[] = []
+  const bleedPages: { skill: Skill; face: "front" | "back"; key: string }[] = []
   if (isSinglePage) {
     if (mode === "both") {
-      selected.forEach(a => {
-        bleedPages.push({ artist: a, face: "front", key: `bleed-f-${a._id}` })
-        bleedPages.push({ artist: a, face: "back", key: `bleed-b-${a._id}` })
+      selected.forEach(s => {
+        bleedPages.push({ skill: s, face: "front", key: `bleed-f-${s._id}` })
+        bleedPages.push({ skill: s, face: "back", key: `bleed-b-${s._id}` })
       })
     } else {
       const face = mode === "backs" ? "back" : "front"
-      selected.forEach(a => bleedPages.push({ artist: a, face, key: `bleed-${face[0]}-${a._id}` }))
+      selected.forEach(s => bleedPages.push({ skill: s, face, key: `bleed-${face[0]}-${s._id}` }))
     }
   }
 
@@ -164,8 +131,8 @@ export const PrintPage = ({ artists, specialSkillsMap }: Props) => {
           <S.PrintBtn onClick={() => window.print()}>Print</S.PrintBtn>
 
           <S.FlowTabs>
-            <S.FlowTab as={Link} href="/print" $active>Artist Cards</S.FlowTab>
-            <S.FlowTab as={Link} href="/print/skills" $active={false}>Skill Cards</S.FlowTab>
+            <S.FlowTab as={Link} href="/print" $active={false}>Artist Cards</S.FlowTab>
+            <S.FlowTab as={Link} href="/print/skills" $active>Skill Cards</S.FlowTab>
           </S.FlowTabs>
 
           <S.ControlSection>
@@ -199,22 +166,21 @@ export const PrintPage = ({ artists, specialSkillsMap }: Props) => {
 
           <S.ControlSection style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
             <S.Label>
-              Cards — {selectedIds.size} / {artists.length}
+              Special Skills — {selectedIds.size} / {skills.length}
             </S.Label>
             <S.SelectActions>
               <S.GhostBtn onClick={selectAll}>All</S.GhostBtn>
               <S.GhostBtn onClick={selectNone}>None</S.GhostBtn>
             </S.SelectActions>
             <S.CardList>
-              {artists.map(a => (
-                <S.CardItem key={a._id}>
+              {skills.map(s => (
+                <S.CardItem key={s._id}>
                   <input
                     type="checkbox"
-                    checked={selectedIds.has(a._id)}
-                    onChange={() => toggleId(a._id)}
+                    checked={selectedIds.has(s._id)}
+                    onChange={() => toggleId(s._id)}
                   />
-                  <S.CardNum>#{String(a.cardNumber ?? 0).padStart(4, "0")}</S.CardNum>
-                  {a.djName}
+                  {s.name}
                 </S.CardItem>
               ))}
             </S.CardList>
@@ -229,28 +195,16 @@ export const PrintPage = ({ artists, specialSkillsMap }: Props) => {
               : ` · ${totalSheets} sheet${totalSheets !== 1 ? "s" : ""}${mode === "both" ? ` (${frontSheets.length} fronts + ${backSheets.length} backs)` : ""}`}
           </S.PreviewMeta>
 
-          {selected.length === 0 && <S.Empty>No cards selected.</S.Empty>}
+          {selected.length === 0 && <S.Empty>No special skills selected.</S.Empty>}
 
           {isSinglePage
             ? bleedPages.map((p, idx) => (
                 <S.BleedSheet key={p.key} $last={idx === bleedPages.length - 1}>
                   <S.BleedCardWrap>
                     {p.face === "front" ? (
-                      <CardFront
-                        djName={p.artist.djName ?? ""}
-                        editedPhoto={p.artist.editedPhoto}
-                        cardNumber={p.artist.cardNumber}
-                        instanceId={`bleed-f-${p.artist._id}`}
-                        squareCorners
-                      />
+                      <SkillCardFront name={p.skill.name} largeImage={p.skill.largeImage} instanceId={`bleed-f-${p.skill._id}`} squareCorners />
                     ) : (
-                      <CardBack
-                        artist={p.artist}
-                        qrDataUrl={p.artist.qrCodeUrl}
-                        specialSkillsData={resolveSpecialSkills(p.artist, specialSkillsMap)}
-                        instanceId={`bleed-b-${p.artist._id}`}
-                        squareCorners
-                      />
+                      <SkillCardBack instanceId={`bleed-b-${p.skill._id}`} squareCorners />
                     )}
                     <CropMarks />
                   </S.BleedCardWrap>
@@ -260,8 +214,8 @@ export const PrintPage = ({ artists, specialSkillsMap }: Props) => {
                 <S.SheetContainer key={sheet.key} $pageBreak={idx > 0}>
                   <S.SheetLabel>{sheet.label}</S.SheetLabel>
                   <S.Sheet $cols={layout.cols}>
-                    {sheet.cards.map(artist => (
-                      <PrintCard key={artist._id} artist={artist} face={sheet.face} cutMarks={cutMarks} specialSkillsMap={specialSkillsMap} />
+                    {sheet.cards.map(skill => (
+                      <PrintSkillCard key={skill._id} skill={skill} face={sheet.face} cutMarks={cutMarks} />
                     ))}
                   </S.Sheet>
                 </S.SheetContainer>

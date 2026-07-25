@@ -21,6 +21,25 @@ function skillLabel(skill: string) {
   return SKILL_LABELS[skill] ?? skill
 }
 
+// SVG <text> doesn't wrap on its own — greedily pack words onto lines of at
+// most maxChars, capped at 2 lines (long tails just run onto the 2nd line).
+function wrapLabel(text: string, maxChars: number): string[] {
+  const words = text.split(" ")
+  const lines: string[] = []
+  let current = ""
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word
+    if (candidate.length > maxChars && current) {
+      lines.push(current)
+      current = word
+    } else {
+      current = candidate
+    }
+  }
+  if (current) lines.push(current)
+  return lines.slice(0, 2)
+}
+
 // Deterministic pseudo-waveform bars from a seed string
 function waveformBars(seed: string, count: number, maxH: number) {
   const bars: number[] = []
@@ -35,17 +54,21 @@ function waveformBars(seed: string, count: number, maxH: number) {
 interface Props {
   artist: Partial<ArtistDoc>
   qrDataUrl?: string
+  specialSkillsData?: { name: string; largeImage: string }[]
   instanceId?: string
   squareCorners?: boolean
+  onQrClick?: () => void
 }
 
-export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props) => {
+export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squareCorners, onQrClick }: Props) => {
   const uid = instanceId ? `-${instanceId}` : ""
   const r = squareCorners ? 0 : borderRadius
   const { djName, stats, genres, skills, cardNumber, socials } = artist
   const instagram = socials?.instagram?.replace(/^@/, "")
   const soundcloud = socials?.soundcloud?.replace(/^@/, "")
   const bars = waveformBars(djName || "DJ", 28, 22)
+  const specialSkills = (specialSkillsData ?? []).slice(0, 2)
+  const hasSpecialSkills = specialSkills.length > 0
 
   
   return (
@@ -59,6 +82,10 @@ export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props
       <defs>
         <clipPath id={`back-card-clip${uid}`}>
           <rect width={W} height={H} rx={r} ry={r} />
+        </clipPath>
+
+        <clipPath id={`back-skill-icon-clip${uid}`} clipPathUnits="objectBoundingBox">
+          <rect x={0} y={0} width={1} height={1} rx={0.12} ry={0.12} />
         </clipPath>
 
         {/* Diagonal stripe pattern */}
@@ -172,7 +199,7 @@ export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props
         ].map(([label, value], i) => {
           const isEmpty = (value === 0 || value === "0") && label !== "YEARS PLAYING"
           return (
-            <g key={String(label)} transform={`translate(22, ${74 + i * 36})`}>
+            <g key={String(label)} transform={`translate(22, ${72 + i * 32})`}>
               <text fontFamily={theme.fonts.mono} fontSize={8} fill="#b0b0c8" letterSpacing="1" y={0}
                 visibility={isEmpty && label !== "YEARS PLAYING" ? "hidden" : "visible"}>
                 {label}
@@ -192,17 +219,17 @@ export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props
         })}
 
         {/* ── Section divider ── */}
-        <line x1={12} y1={185} x2={W} y2={185} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
+        <line x1={12} y1={173} x2={W} y2={173} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
 
         {/* ── Danceability scale ── */}
-        <text x={22} y={198} fontFamily={theme.fonts.mono} fontSize={7} fill={theme.colors.muted} letterSpacing="1">EASY LISTENING</text>
-        <text x={W - 16} y={198} fontFamily={theme.fonts.mono} fontSize={7} fill={theme.colors.muted} textAnchor="end" letterSpacing="1">DANCEABILITY</text>
+        <text x={22} y={186} fontFamily={theme.fonts.mono} fontSize={7} fill={theme.colors.muted} letterSpacing="1">EASY LISTENING</text>
+        <text x={W - 16} y={186} fontFamily={theme.fonts.mono} fontSize={7} fill={theme.colors.muted} textAnchor="end" letterSpacing="1">DANCEABILITY</text>
         {/* Track */}
-        <rect x={22} y={204} width={W - 44} height={9} rx={4.5} fill={theme.colors.surface} />
+        <rect x={22} y={192} width={W - 44} height={9} rx={4.5} fill={theme.colors.surface} />
         {/* Fill */}
         <rect
           x={22}
-          y={204}
+          y={192}
           width={((stats?.danceabilityScale ?? 50) / 100) * (W - 44)}
           height={9}
           rx={4.5}
@@ -211,15 +238,15 @@ export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props
         {/* Thumb */}
         <circle
           cx={22 + ((stats?.danceabilityScale ?? 50) / 100) * (W - 44)}
-          cy={208.5}
+          cy={196.5}
           r={8}
           fill={theme.colors.gold}
         />
 
         {/* ── Genres ── */}
-        <line x1={12} y1={222} x2={W} y2={222} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
+        <line x1={12} y1={210} x2={W} y2={210} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
         {(genres ?? []).slice(0, 2).map((genre, i) => (
-          <g key={genre} transform={`translate(${22 + i * 120}, 228)`}>
+          <g key={genre} transform={`translate(${22 + i * 120}, 216)`}>
             <rect width={112} height={30} rx={15} fill="#2d1060" stroke="#a855f7" strokeWidth={1} />
             <text
               x={56}
@@ -237,13 +264,13 @@ export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props
         ))}
 
         {/* ── Skills ── */}
-        <line x1={12} y1={268} x2={W} y2={268} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
-        {(skills ?? []).slice(0, 8).map((skill, i) => {
+        <line x1={12} y1={254} x2={W} y2={254} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
+        {(skills ?? []).slice(0, hasSpecialSkills ? 4 : 8).map((skill, i) => {
           const col = i % 4
           const row = Math.floor(i / 4)
           const label = skillLabel(skill)
           const x = 18 + col * 84
-          const y = 276 + row * 32
+          const y = 262 + row * 32
           return (
             <g key={skill} transform={`translate(${x}, ${y})`}>
               <rect width={76} height={26} rx={5} fill="#2a2a40" />
@@ -264,24 +291,77 @@ export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props
           )
         })}
 
+        {/* ── Special Skills (large icons, up to 2) ── */}
+        {hasSpecialSkills && (() => {
+          const dividerY = 296
+          const iconSize = 58
+          const iconGap = 14
+          const iconY = dividerY + 22
+          const startX = 24
+          return (
+            <>
+              <line x1={12} y1={dividerY} x2={W} y2={dividerY} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
+              {specialSkills.map((skill, i) => {
+                const iconX = startX + i * (iconSize + iconGap)
+                return (
+                  <g key={skill.name}>
+                    <rect x={iconX - 3} y={iconY - 3} width={iconSize + 6} height={iconSize + 6} rx={10} fill="#2a1a40" stroke={theme.colors.gold} strokeWidth={1} />
+                    <image
+                      href={skill.largeImage}
+                      x={iconX}
+                      y={iconY}
+                      width={iconSize}
+                      height={iconSize}
+                      preserveAspectRatio="xMidYMid slice"
+                      clipPath={`url(#back-skill-icon-clip${uid})`}
+                    />
+                    <text
+                      x={iconX + iconSize / 2}
+                      y={iconY + iconSize + 13}
+                      fontFamily={theme.fonts.mono}
+                      fontSize={8.5}
+                      fill={theme.colors.gold}
+                      textAnchor="middle"
+                      letterSpacing="0.3"
+                    >
+                      {wrapLabel(skill.name.toUpperCase(), 13).map((line, li) => (
+                        <tspan key={li} x={iconX + iconSize / 2} dy={li === 0 ? 0 : 8}>
+                          {line}
+                        </tspan>
+                      ))}
+                    </text>
+                  </g>
+                )
+              })}
+            </>
+          )
+        })()}
+
         {/* ── QR code ── */}
-        {qrDataUrl && (
-          <g transform={`translate(${W - 90}, ${H - 105})`}>
-            <rect width={76} height={76} rx={6} fill="#fff" />
-            <image href={qrDataUrl} x={4} y={4} width={68} height={68} />
-            <text
-              x={38}
-              y={90}
-              fontFamily={theme.fonts.mono}
-              fontSize={7}
-              fill={theme.colors.muted}
-              textAnchor="middle"
-              letterSpacing="1"
+        {qrDataUrl && (() => {
+          const qrSize = hasSpecialSkills ? 64 : 76
+          const qrY = hasSpecialSkills ? H - 90 : H - 105
+          return (
+            <g
+              transform={`translate(${W - 14 - qrSize}, ${qrY})`}
+              onClick={onQrClick ? (e) => { e.stopPropagation(); onQrClick() } : undefined}
             >
-              ARTIST PROFILE
-            </text>
-          </g>
-        )}
+              <rect width={qrSize} height={qrSize} rx={6} fill="#fff" />
+              <image href={qrDataUrl} x={4} y={4} width={qrSize - 8} height={qrSize - 8} />
+              <text
+                x={qrSize / 2}
+                y={qrSize + 14}
+                fontFamily={theme.fonts.mono}
+                fontSize={7}
+                fill={theme.colors.muted}
+                textAnchor="middle"
+                letterSpacing="1"
+              >
+                ARTIST PROFILE
+              </text>
+            </g>
+          )
+        })()}
 
         {/* ── Bottom waveform decoration ── */}
         {bars.map((barH, i) => (
@@ -321,15 +401,17 @@ export const CardBack = ({ artist, qrDataUrl, instanceId, squareCorners }: Props
           {cardNumber ? `#${String(cardNumber).padStart(4, "0")}` : ""}
         </text>
 
-        {/* ── Card border ── */}
-        <rect
-          x={1} y={1} width={W - 2} height={H - 2}
-          rx={r} ry={r}
-          fill="none"
-          stroke={theme.colors.gold}
-          strokeWidth={1.5}
-          opacity="0.4"
-        />
+        {/* ── Card border (screen only) ── */}
+        {!squareCorners && (
+          <rect
+            x={1} y={1} width={W - 2} height={H - 2}
+            rx={r} ry={r}
+            fill="none"
+            stroke={theme.colors.gold}
+            strokeWidth={1.5}
+            opacity="0.4"
+          />
+        )}
       </g>
     </svg>
   )

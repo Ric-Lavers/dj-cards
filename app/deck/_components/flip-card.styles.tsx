@@ -48,6 +48,11 @@ export const CardNumber = styled.p`
   font-family: ${theme.fonts.mono};
   color: ${theme.colors.muted};
   letter-spacing: 0.1em;
+  text-decoration: none;
+
+  &:hover {
+    color: ${theme.colors.gold};
+  }
 `
 
 export const HintTap = styled.p`

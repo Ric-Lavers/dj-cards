@@ -22,14 +22,13 @@ function sunburstPaths(cx: number, cy: number, numRays: number, r: number) {
 }
 
 interface Props {
-  djName: string
-  editedPhoto?: string
-  cardNumber?: number
+  name: string
+  largeImage?: string
   instanceId?: string
   squareCorners?: boolean
 }
 
-export const CardFront = ({ djName, editedPhoto, cardNumber, instanceId, squareCorners }: Props) => {
+export const SkillCardFront = ({ name, largeImage, instanceId, squareCorners }: Props) => {
   const uid = instanceId ? `-${instanceId}` : ""
   const r = squareCorners ? 0 : borderRadius
   const rays = sunburstPaths(W * 0.52, H * 0.42, 24, 700)
@@ -43,132 +42,114 @@ export const CardFront = ({ djName, editedPhoto, cardNumber, instanceId, squareC
       style={{ display: "block" }}
     >
       <defs>
-        <clipPath id={`front-card-clip${uid}`}>
+        <clipPath id={`skillfront-card-clip${uid}`}>
           <rect width={W} height={H} rx={r} ry={r} />
         </clipPath>
-        <clipPath id={`front-photo-clip${uid}`}>
+        <clipPath id={`skillfront-icon-clip${uid}`}>
           <rect x={12} y={12} width={W - 24} height={H - 100} rx={8} ry={8} />
         </clipPath>
 
-        {/* Background radial glow */}
-        <radialGradient id={`front-bg-glow${uid}`} cx="52%" cy="42%" r="60%">
+        <radialGradient id={`skillfront-bg-glow${uid}`} cx="52%" cy="42%" r="60%">
           <stop offset="0%" stopColor="#2d0060" stopOpacity="0.9" />
           <stop offset="60%" stopColor="#0d0020" stopOpacity="1" />
           <stop offset="100%" stopColor="#0a0008" stopOpacity="1" />
         </radialGradient>
 
-        {/* Photo bottom fade */}
-        <linearGradient id={`front-photo-fade${uid}`} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`skillfront-icon-fade${uid}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="55%" stopColor="transparent" />
           <stop offset="100%" stopColor="#0a0008" />
         </linearGradient>
 
-        {/* Name bar gradient */}
-        <linearGradient id={`front-name-grad${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id={`skillfront-name-grad${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#1a0a2e" />
           <stop offset="100%" stopColor="#0a0008" />
         </linearGradient>
 
-        {/* Side banner */}
-        <linearGradient id={`front-banner-grad${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
+        <linearGradient id={`skillfront-banner-grad${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#c9a84c" />
           <stop offset="50%" stopColor="#7c3aed" />
           <stop offset="100%" stopColor="#c9a84c" />
         </linearGradient>
 
-        {/* Diagonal slash gradient */}
-        <linearGradient id={`front-slash-grad${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id={`skillfront-slash-grad${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.8" />
           <stop offset="100%" stopColor="#c9a84c" stopOpacity="0.6" />
         </linearGradient>
       </defs>
 
-      {/* ── Layer 1: background ── */}
-      <g clipPath={`url(#front-card-clip${uid})`}>
+      <g clipPath={`url(#skillfront-card-clip${uid})`}>
         <rect width={W} height={H} fill="#0a0008" />
-        <rect width={W} height={H} fill={`url(#front-bg-glow${uid})`} />
+        <rect width={W} height={H} fill={`url(#skillfront-bg-glow${uid})`} />
 
-        {/* ── Layer 2: sunburst rays ── */}
         {rays.map((d, i) => (
           <path key={i} d={d} fill="#2a005a" opacity="0.55" />
         ))}
 
-        {/* ── Layer 3: photo ── */}
-        {editedPhoto ? (
+        {largeImage ? (
           <image
-            href={editedPhoto}
+            href={largeImage}
             x={12}
             y={12}
             width={W - 24}
             height={H - 100}
             preserveAspectRatio="xMidYMid slice"
-            clipPath={`url(#front-photo-clip${uid})`}
+            clipPath={`url(#skillfront-icon-clip${uid})`}
           />
         ) : (
           <rect x={12} y={12} width={W - 24} height={H - 100} rx={8} fill="#1a0a2e" />
         )}
 
-        {/* ── Layer 4: photo fade into name bar ── */}
-        <rect x={0} y={H - 200} width={W} height={200} fill={`url(#front-photo-fade${uid})`} />
+        <rect x={0} y={H - 200} width={W} height={200} fill={`url(#skillfront-icon-fade${uid})`} />
 
-        {/* ── Layer 5: diagonal slash accent ── */}
         <polygon
           points={`0,${H - 110}  ${W * 0.65},${H - 110}  ${W * 0.75},${H - 88}  0,${H - 88}`}
-          fill={`url(#front-slash-grad${uid})`}
+          fill={`url(#skillfront-slash-grad${uid})`}
           opacity="0.7"
         />
 
-        {/* ── Layer 6: name bar ── */}
-        <rect x={0} y={H - 88} width={W} height={88} fill={`url(#front-name-grad${uid})`} />
-
-        {/* Gold top separator line */}
+        <rect x={0} y={H - 88} width={W} height={88} fill={`url(#skillfront-name-grad${uid})`} />
         <line x1={0} y1={H - 88} x2={W} y2={H - 88} stroke={theme.colors.gold} strokeWidth={1.5} />
 
-        {/* ── Layer 7: side banner ── */}
-        <rect x={0} y={0} width={12} height={H} fill={`url(#front-banner-grad${uid})`} />
-        {/* Banner inner highlight */}
+        <rect x={0} y={0} width={12} height={H} fill={`url(#skillfront-banner-grad${uid})`} />
         <rect x={11} y={0} width={1} height={H} fill={theme.colors.gold} opacity="0.4" />
 
-        {/* ── Layer 8: top-right card number chip ── */}
-        <rect x={W - 54} y={14} width={40} height={18} rx={4} fill="#0a0008" opacity="0.7" />
+        <rect x={W - 108} y={14} width={94} height={18} rx={4} fill="#0a0008" opacity="0.7" />
         <text
-          x={W - 34}
+          x={W - 61}
           y={23}
           fontFamily={theme.fonts.mono}
-          fontSize={9}
+          fontSize={8.5}
           fill={theme.colors.gold}
           textAnchor="middle"
           dominantBaseline="middle"
+          letterSpacing="0.5"
         >
-          {cardNumber ? `#${String(cardNumber).padStart(4, "0")}` : "#0000"}
+          SPECIAL SKILL
         </text>
 
-        {/* ── Layer 9: DJ name ── */}
         <text
           x={22}
           y={H - 50}
           fontFamily={theme.fonts.heading}
-          fontSize={28}
+          fontSize={26}
           fontWeight="900"
           fill={theme.colors.white}
           textAnchor="start"
           dominantBaseline="middle"
         >
-          {djName || "DJ NAME"}
+          {name || "SKILL NAME"}
         </text>
 
-        {/* Gold underline accent on name */}
         <line
           x1={22}
           y1={H - 28}
-          x2={Math.min(22 + (djName || "DJ NAME").length * 16, W - 20)}
+          x2={Math.min(22 + (name || "SKILL NAME").length * 15, W - 20)}
           y2={H - 28}
           stroke={theme.colors.gold}
           strokeWidth={2}
           opacity="0.6"
         />
 
-        {/* ── Layer 10: card outer border (screen only) ── */}
         {!squareCorners && (
           <rect
             x={1}

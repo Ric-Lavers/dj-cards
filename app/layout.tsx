@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { StyledProvider } from "./_providers/StyledProvider"
+import { SiteNav } from "./_components/SiteNav"
 
 export const metadata: Metadata = {
   title: "DJ Cards",
@@ -10,7 +11,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <StyledProvider>{children}</StyledProvider>
+        <StyledProvider>
+          <SiteNav />
+          {children}
+        </StyledProvider>
       </body>
     </html>
   )

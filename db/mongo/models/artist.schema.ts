@@ -5,6 +5,7 @@ export type Skill = "scratching" | "long_mixes" | "vinyl" | "cdjs" | "ableton" |
 
 export interface ArtistDoc extends Document {
   djName: string
+  photo: string
   editedPhoto: string
   poseChoice: PoseChoice
   customPose: string
@@ -17,6 +18,7 @@ export interface ArtistDoc extends Document {
     danceabilityScale: number
   }
   skills: Skill[]
+  specialSkills: string[]
   cardNumber: number
   qrCodeUrl: string
   socials: {
@@ -35,6 +37,7 @@ export interface ArtistDoc extends Document {
 const ArtistSchema = new Schema<ArtistDoc>(
   {
     djName: { type: String, required: true },
+    photo: { type: String, default: "" },
     editedPhoto: { type: String, default: "" },
     poseChoice: {
       type: String,
@@ -51,6 +54,7 @@ const ArtistSchema = new Schema<ArtistDoc>(
       danceabilityScale: { type: Number, min: 0, max: 100, default: 50 },
     },
     skills: [{ type: String }],
+    specialSkills: { type: [String], default: [], validate: (v: string[]) => v.length <= 2 },
     cardNumber: { type: Number },
     qrCodeUrl: { type: String, default: "" },
     socials: {
