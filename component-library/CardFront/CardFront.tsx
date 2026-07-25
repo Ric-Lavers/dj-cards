@@ -168,19 +168,21 @@ export const CardFront = ({ djName, editedPhoto, cardNumber, instanceId, squareC
           opacity="0.6"
         />
 
-        {/* ── Layer 10: card outer border ── */}
-        <rect
-          x={1}
-          y={1}
-          width={W - 2}
-          height={H - 2}
-          rx={r}
-          ry={r}
-          fill="none"
-          stroke={theme.colors.gold}
-          strokeWidth={1.5}
-          opacity="0.4"
-        />
+        {/* ── Layer 10: card outer border (screen only) ── */}
+        {!squareCorners && (
+          <rect
+            x={1}
+            y={1}
+            width={W - 2}
+            height={H - 2}
+            rx={r}
+            ry={r}
+            fill="none"
+            stroke={theme.colors.gold}
+            strokeWidth={1.5}
+            opacity="0.4"
+          />
+        )}
       </g>
     </svg>
   )
