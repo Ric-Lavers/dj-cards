@@ -1,11 +1,12 @@
 import Link from "next/link"
+import { ElectronDanceLogo } from "@/component-library"
 
 export default function HomePage() {
   return (
     <main style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "1.5rem", padding: "2rem" }}>
-      <h1 style={{ fontSize: "3rem", fontWeight: 900, fontFamily: "'Arial Black', sans-serif" }}>
-        DJ Cards
-      </h1>
+      <div style={{ width: 260, height: 260 }}>
+        <ElectronDanceLogo x={0} y={0} width={260} height={260} text="DJ Cards" />
+      </div>
       <p style={{ color: "#6b6b80", fontSize: "1.1rem" }}>
         Your DJ. A card. Like a baseball card, but better.
       </p>

@@ -6,12 +6,14 @@ export const ElectronDanceLogo = ({
   width,
   height,
   instanceId,
+  text = "electron.dance",
 }: {
   x: number
   y: number
   width: number
   height: number
   instanceId?: string
+  text?: string
 }) => {
   const uid = instanceId ? `-${instanceId}` : ""
   const gradientId = `electron-dance-pink${uid}`
@@ -43,7 +45,7 @@ export const ElectronDanceLogo = ({
         fontSize="46"
         fill={`url(#${gradientId})`}
       >
-        electron.dance
+        {text}
       </text>
     </svg>
   )
