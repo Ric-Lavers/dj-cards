@@ -21,6 +21,25 @@ function skillLabel(skill: string) {
   return SKILL_LABELS[skill] ?? skill
 }
 
+// SVG <text> doesn't wrap on its own — greedily pack words onto lines of at
+// most maxChars, capped at 2 lines (long tails just run onto the 2nd line).
+function wrapLabel(text: string, maxChars: number): string[] {
+  const words = text.split(" ")
+  const lines: string[] = []
+  let current = ""
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word
+    if (candidate.length > maxChars && current) {
+      lines.push(current)
+      current = word
+    } else {
+      current = candidate
+    }
+  }
+  if (current) lines.push(current)
+  return lines.slice(0, 2)
+}
+
 // Deterministic pseudo-waveform bars from a seed string
 function waveformBars(seed: string, count: number, maxH: number) {
   const bars: number[] = []
@@ -298,14 +317,18 @@ export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squ
                     />
                     <text
                       x={iconX + iconSize / 2}
-                      y={iconY + iconSize + 18}
+                      y={iconY + iconSize + 13}
                       fontFamily={theme.fonts.mono}
                       fontSize={8.5}
                       fill={theme.colors.gold}
                       textAnchor="middle"
                       letterSpacing="0.3"
                     >
-                      {skill.name.toUpperCase()}
+                      {wrapLabel(skill.name.toUpperCase(), 13).map((line, li) => (
+                        <tspan key={li} x={iconX + iconSize / 2} dy={li === 0 ? 0 : 8}>
+                          {line}
+                        </tspan>
+                      ))}
                     </text>
                   </g>
                 )
