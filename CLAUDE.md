@@ -17,7 +17,7 @@ Reference project for coding style: `/Users/riclavers/sites/personal/jambaroo-ha
 - **Next.js API routes** for backend (not Express — simpler than jambaroo for this scope)
 - **styled-components v6** for all styling
 - **SVG** for card generation (front + back templates)
-- **AI image pipeline** — Replicate or fal.ai (background removal + pose-matched style prompt)
+- **AI image pipeline** — OpenAI `gpt-image-1` (`services/ai/generateSpecialSkillIcon.ts`, `services/ai/processArtistPhoto.ts`) — text-to-image for special-skill icons, image-edit for pose-matched DJ portraits. `@imgly/background-removal` runs client-side for the "cutout" pose option.
 
 ---
 
@@ -36,10 +36,16 @@ npm run lint      # ESLint
 | Route | Purpose |
 |---|---|
 | `/invite/[token]` | Landing page — "Create yours" CTA |
-| `/create` | Input form (all card fields) |
-| `/create/preview` | Two-col sticky SVG preview (desktop), stacked (mobile) |
-| `/card/[id]` | View card — invite others, order physical copy |
-| `/artist/[id]` | Public profile (QR code destination) — **V2** |
+| `/create` | Input form + live flip preview (photo/pose, genres, skills, special skills, stats) — preview is inline on this page, there is no separate `/create/preview` route |
+| `/deck` | Gallery of all artist cards, flip front/back |
+| `/card/[id]` | View card — downloadable PNGs, invite others, order physical copy |
+| `/card/[id]/edit` | Edit an artist's card (no auth — reached via a secret QR-code click on that artist's flipped-to-back deck card, not linked anywhere visibly) |
+| `/special-skills` | Catalog of all special skills |
+| `/special-skills/create` | Create a special skill — name + prompt → AI-generated icon (large + small) |
+| `/special-skills/[id]` | Special skill detail/edit + which artists have picked it |
+| `/print` | Print artist cards (fronts/backs/both, sheet layouts, bleed + crop marks) |
+| `/print/skills` | Print special-skill cards, same flow/dimensions as `/print` |
+| `/artist/[id]` | Public profile (QR code destination) — **V2, not built** |
 
 ---
 
@@ -49,26 +55,37 @@ npm run lint      # ESLint
 // db/mongo/models/artist.schema.ts
 Artist {
   djName: string
-  photo: string                   // original upload URL
-  editedPhoto: string             // AI-processed URL
-  poseChoice: 'hands_in_air' | 'knob_twiddler' | 'headphone_grab'
-  genres: [string, string]        // exactly 2
+  editedPhoto: string              // AI-processed URL (Vercel Blob)
+  poseChoice: 'hands_in_air' | 'knob_twiddler' | 'headphone_grab' | 'fist_pump'
+            | 'the_lean' | 'eyes_closed' | 'natural' | 'original' | 'cutout'
+  customPose: string                // freeform pose description, overrides poseChoice
+  genres: [string, string]          // exactly 2, Mongoose-validated
   stats: {
     yearsPlaying: number
     tracksUploaded: number
     totalFollowers: number
-    bpm: number                   // favourite BPM — show prominently on back
-    danceabilityScale: number     // 0–100 (danceability ↔ easy listening)
+    bpm: number                     // favourite BPM — show prominently on back
+    danceabilityScale: number       // 0–100 (danceability ↔ easy listening)
   }
-  skills: ('scratching' | 'long_mixes' | 'vinyl' | 'cdjs' | 'ableton' | 'guitar' | 'vocalist' | string)[]
-  cardNumber: number              // sequential, auto-assigned
-  qrCodeUrl: string               // links to /artist/[id]
-  contactDetails: {
-    email: string
-    instagram: string
-    address: string               // for physical card postage
-  }
-  team: ObjectId                  // one team for MVP
+  skills: string[]                  // TS type is a Skill union, but the Mongoose field is
+                                     // unrestricted `[{ type: String }]` — custom skills pass through
+  specialSkills: string[]           // up to 2, names referencing the SpecialSkill catalog by name
+  cardNumber: number                // sequential, auto-assigned
+  qrCodeUrl: string                 // links to /artist/[id] (V2 — currently just a placeholder target)
+  socials: { instagram: string; soundcloud: string }
+  contactDetails: { email: string; phone?: string; address: string }
+  invitedBy: ObjectId | null
+  team: ObjectId                    // one team for MVP
+}
+
+// db/mongo/models/specialSkill.schema.ts
+SpecialSkill {
+  name: string             // unique
+  prompt: string           // freeform concept text used for AI generation
+  largeImage: string       // 1024x1024 card-sized icon (Vercel Blob URL)
+  smallImage: string       // 40x40 sharp-resized icon, for compact/chip display
+  invented: boolean        // true if created via the "+3 special skills" AI-invent button
+  order: number
 }
 ```
 
@@ -79,38 +96,48 @@ Artist {
 ```
 app/
   _providers/          ← global client providers
-  _utils/              ← route-local utilities
   api/
-    _lib/              ← shared API utilities, server actions
-    artist/route.ts
-    card/route.ts
+    artist/route.ts, artist/[id]/route.ts
+    photo/route.ts               ← AI photo processing
+    genres/route.ts
+    special-skills/route.ts, [id]/route.ts, preview/route.ts, invent/route.ts
+    invite/route.ts
   invite/[token]/
-    page.tsx
   create/
-    _components/
-    page.tsx
-    preview/
-      _components/
-      page.tsx
+    _components/                 ← includes create-page.styles.tsx, reused by
+                                    special-skills/create and card/[id]/edit
+    page.tsx                     ← form + inline flip preview, no separate /preview route
+  deck/
+    _components/FlipCard.tsx
   card/[id]/
-    _components/
+    _components/DownloadableCard.tsx
     page.tsx
-component-library/     ← shared design system primitives
-  CardFront/
-  CardBack/
-  svg/
-  index.ts
+    edit/
+      _components/ArtistEditForm.tsx
+  special-skills/
+    page.tsx, create/page.tsx
+    [id]/_components/{SpecialSkillEditForm,ArtistSpread}.tsx, page.tsx
+  print/
+    _components/{PrintPage,print-page.styles}.tsx
+    page.tsx
+    skills/_components/SkillPrintPage.tsx, page.tsx
+component-library/     ← shared design system primitives, plain SVG (no styled-components)
+  CardFront/, CardBack/          ← artist card front/back
+  SkillCard/                     ← SkillCardFront/Back + ElectronDanceLogo, special-skill card front/back
+  FlipPreview/                   ← generic 2-or-N-face flip/cycle wrapper, shared by all card types
+  types.ts, index.ts
 db/
   mongo/
     connect.ts
     models/
-      artist.schema.ts
-      team.schema.ts
-      invite.schema.ts
+      artist.schema.ts, genre.schema.ts, specialSkill.schema.ts, team.schema.ts, invite.schema.ts
 services/
   ai/
-    removeBackground.ts
-    applyPosePrompt.ts
+    processArtistPhoto.ts        ← images.edit, pose-matched DJ portraits
+    generateSpecialSkillIcon.ts  ← images.generate, special-skill icons (large+small)
+    inventSpecialSkillNames.ts   ← chat completion, "+3 special skills" button
+    removeBackground.ts          ← unused; background removal actually runs client-side via
+                                    @imgly/background-removal in app/create/page.tsx
 styles/
   theme.ts
   globalStyle.ts
@@ -226,21 +253,22 @@ const artist = await getArtist(id),
 
 ## SVG Card System
 
-Cards are generated as SVG — designed to be imported into print templates later. The MVP generates basic layout with correct data populated; a designer will refine the template later.
+Cards are plain SVG (`<svg viewBox="0 0 350 490">`, `theme.card` dimensions) with absolutely-positioned elements — no styled-components, no flex/grid. There are two independent card families, each a 2-sided front/back pair, both composed via the shared `FlipPreview` component:
 
-**Front:** AI-processed photo (bg removed, pose-matched), side banner, DJ name, card number.
+- **Artist card** (`CardFront` + `CardBack`) — front: AI-processed photo, side banner, DJ name, card number. Back: DJ name, stats grid, genre badges, danceability scale, BPM, regular skill pills, up to 2 special-skill icons, QR code (secretly click-to-edit on the deck).
+- **Special-skill card** (`SkillCardFront` + `SkillCardBack`) — front: the skill's AI-generated icon + name, styled like `CardFront`. Back: a uniform mark shared by every skill card (the real electron.dance SVG), not per-skill content.
 
-**Back:** DJ name, stats grid, genre badges, danceability scale (visual), BPM (prominent), skill icons, QR code.
+Every card face supports a `squareCorners` prop for print (see `app/print/`), and print output uses the exact same SVG components/dimensions as the screen version.
+
+**Before editing any of these components**, load the `svg-card-design` skill (`.claude/skills/svg-card-design/SKILL.md`) — it covers the unique-gradient-ID pattern, the fixed layout anchors that are easy to collide with, clipPath technique, print parity, and how to test flip interactions with the devtools MCP tools.
 
 ---
 
 ## AI Image Pipeline
 
-1. User uploads photo → store original URL
-2. User selects pose (`hands_in_air`, `knob_twiddler`, `headphone_grab`)
-3. Send to AI with pose prompt + shared system style prompt (consistent feel across all cards)
-4. Remove background
-5. Composite result onto SVG card layer
+**DJ portrait** (`services/ai/processArtistPhoto.ts`): user uploads a photo → picks a pose (or a custom pose description, or "natural"/"cutout") → `images.edit` transforms it with a shared style prompt (deep near-black `#0a0008` background, purple/gold rim lighting, cinematic — this exact palette is the "house style" reused everywhere else AI art appears on a card) → result becomes `editedPhoto`. The "cutout" pose instead runs client-side background removal (`@imgly/background-removal`) with no AI call. Preview flow returns a `data:` URL; only converted to a permanent Vercel Blob URL on final submit (`utils/uploadToBlob.ts`).
+
+**Special-skill icon** (`services/ai/generateSpecialSkillIcon.ts`): no reference photo — pure `images.generate` (text-to-image) wrapping the user's freeform concept in the same style palette, explicitly excluding human figures for an abstract emblem look. Produces one `largeImage` (1024x1024) plus a `sharp`-resized `smallImage` (40x40) from the same generation.
 
 ---
 
