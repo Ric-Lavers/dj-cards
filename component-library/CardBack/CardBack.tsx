@@ -180,7 +180,7 @@ export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squ
         ].map(([label, value], i) => {
           const isEmpty = (value === 0 || value === "0") && label !== "YEARS PLAYING"
           return (
-            <g key={String(label)} transform={`translate(22, ${62 + i * 32})`}>
+            <g key={String(label)} transform={`translate(22, ${72 + i * 32})`}>
               <text fontFamily={theme.fonts.mono} fontSize={8} fill="#b0b0c8" letterSpacing="1" y={0}
                 visibility={isEmpty && label !== "YEARS PLAYING" ? "hidden" : "visible"}>
                 {label}
@@ -278,7 +278,7 @@ export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squ
           const iconSize = 58
           const iconGap = 14
           const iconY = dividerY + 22
-          const startX = 18
+          const startX = 24
           return (
             <>
               <line x1={12} y1={dividerY} x2={W} y2={dividerY} stroke={theme.colors.border} strokeWidth={0.75} opacity="0.5" />
