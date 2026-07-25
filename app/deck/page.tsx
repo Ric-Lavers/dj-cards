@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/db/mongo/connect"
 import ArtistModel from "@/db/mongo/models/artist.schema"
 import SpecialSkillModel from "@/db/mongo/models/specialSkill.schema"
 import { FlipCard } from "./_components/FlipCard"
+import { SkillFlipCard } from "./_components/SkillFlipCard"
 import * as S from "./_components/flip-card.styles"
 import Link from "next/link"
 
@@ -12,7 +13,10 @@ export default async function CardsPage() {
   const raw = await ArtistModel.find({}).sort({ cardNumber: 1 }).lean()
   const artists = JSON.parse(JSON.stringify(raw))
 
-  const skillDocs = await SpecialSkillModel.find({}).lean()
+  const skillDocs = await SpecialSkillModel.find({}).sort({ order: 1, name: 1 }).lean()
+  const specialSkills = JSON.parse(JSON.stringify(skillDocs)).map(
+    (s: { _id: string; name: string; largeImage: string }) => ({ _id: s._id, name: s.name, largeImage: s.largeImage })
+  )
   const specialSkillsMap = Object.fromEntries(
     skillDocs.map((s) => [s.name, { name: s.name, smallImage: s.smallImage, largeImage: s.largeImage }])
   )
@@ -28,7 +32,7 @@ export default async function CardsPage() {
         </Link>
       </div>
 
-      {artists.length === 0 ? (
+      {artists.length === 0 && specialSkills.length === 0 ? (
         <div style={{ textAlign: "center", padding: "6rem 2rem", color: "#6b6b80" }}>
           No cards yet. <Link href="/create" style={{ color: "#c9a84c" }}>Be the first.</Link>
         </div>
@@ -36,6 +40,9 @@ export default async function CardsPage() {
         <S.Grid>
           {artists.map((artist: any) => (
             <FlipCard key={artist._id} artist={artist} specialSkillsMap={specialSkillsMap} />
+          ))}
+          {specialSkills.map((skill: { _id: string; name: string; largeImage: string }) => (
+            <SkillFlipCard key={skill._id} skill={skill} />
           ))}
         </S.Grid>
       )}
