@@ -1,6 +1,7 @@
 "use client"
 
 import { memo, useState } from "react"
+import Link from "next/link"
 import type { ArtistDoc } from "@/db/mongo/models/artist.schema"
 import { CardFront, CardBack } from "@/component-library"
 import * as S from "./print-page.styles"
@@ -161,6 +162,11 @@ export const PrintPage = ({ artists, specialSkillsMap }: Props) => {
       <S.Layout>
         <S.Controls>
           <S.PrintBtn onClick={() => window.print()}>Print</S.PrintBtn>
+
+          <S.FlowTabs>
+            <S.FlowTab as={Link} href="/print" $active>Artist Cards</S.FlowTab>
+            <S.FlowTab as={Link} href="/print/skills" $active={false}>Skill Cards</S.FlowTab>
+          </S.FlowTabs>
 
           <S.ControlSection>
             <S.Label>Page type</S.Label>

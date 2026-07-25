@@ -3,6 +3,26 @@
 import styled, { createGlobalStyle } from "styled-components"
 import { theme } from "@/styles/theme"
 
+export const FlowTabs = styled.div`
+  display: flex;
+  gap: 0.4rem;
+  @media print { display: none; }
+`
+
+export const FlowTab = styled.a<{ $active: boolean }>`
+  flex: 1;
+  text-align: center;
+  padding: 0.4rem;
+  border-radius: 4px;
+  font-family: ${theme.fonts.mono};
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border: 1px solid ${(p) => (p.$active ? theme.colors.gold : theme.colors.border)};
+  background: ${(p) => (p.$active ? "#1c1409" : "transparent")};
+  color: ${(p) => (p.$active ? theme.colors.gold : theme.colors.muted)};
+`
+
 export const PrintGlobal = createGlobalStyle`
   @page { margin: 10mm; }
   @media print {

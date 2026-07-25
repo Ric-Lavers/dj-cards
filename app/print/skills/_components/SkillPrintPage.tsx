@@ -1,6 +1,7 @@
 "use client"
 
 import { memo, useState } from "react"
+import Link from "next/link"
 import { SkillCardFront, SkillCardBack } from "@/component-library"
 import * as S from "../../_components/print-page.styles"
 
@@ -128,6 +129,11 @@ export const SkillPrintPage = ({ skills }: Props) => {
       <S.Layout>
         <S.Controls>
           <S.PrintBtn onClick={() => window.print()}>Print</S.PrintBtn>
+
+          <S.FlowTabs>
+            <S.FlowTab as={Link} href="/print" $active={false}>Artist Cards</S.FlowTab>
+            <S.FlowTab as={Link} href="/print/skills" $active>Skill Cards</S.FlowTab>
+          </S.FlowTabs>
 
           <S.ControlSection>
             <S.Label>Page type</S.Label>
