@@ -52,7 +52,7 @@ function waveformBars(seed: string, count: number, maxH: number) {
 }
 
 interface Props {
-  artist: Partial<ArtistDoc>
+  artist: Partial<ArtistDoc> & { gigCount?: number }
   qrDataUrl?: string
   specialSkillsData?: { name: string; largeImage: string }[]
   instanceId?: string
@@ -63,7 +63,7 @@ interface Props {
 export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squareCorners, onQrClick }: Props) => {
   const uid = instanceId ? `-${instanceId}` : ""
   const r = squareCorners ? 0 : borderRadius
-  const { djName, stats, genres, skills, cardNumber, socials } = artist
+  const { djName, stats, genres, skills, cardNumber, socials, gigCount } = artist
   const instagram = socials?.instagram?.replace(/^@/, "")
   const soundcloud = socials?.soundcloud?.replace(/^@/, "")
   const bars = waveformBars(djName || "DJ", 28, 22)
@@ -190,6 +190,35 @@ export const CardBack = ({ artist, qrDataUrl, specialSkillsData, instanceId, squ
         >
           BPM
         </text>
+
+        {/* ── Gigs played — live count from the roster, under BPM ── */}
+        {gigCount !== undefined && (
+          <>
+            <text
+              x={W - 16}
+              y={140}
+              fontFamily={theme.fonts.heading}
+              fontSize={26}
+              fontWeight="900"
+              fill={theme.colors.white}
+              textAnchor="end"
+              dominantBaseline="middle"
+            >
+              {gigCount}
+            </text>
+            <text
+              x={W - 16}
+              y={160}
+              fontFamily={theme.fonts.body}
+              fontSize={8}
+              fill={theme.colors.muted}
+              textAnchor="end"
+              letterSpacing="2"
+            >
+              GIGS
+            </text>
+          </>
+        )}
 
         {/* ── Stats grid ── */}
         {[

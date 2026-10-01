@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/db/mongo/connect"
 import ArtistModel from "@/db/mongo/models/artist.schema"
 import SpecialSkillModel from "@/db/mongo/models/specialSkill.schema"
+import { GigCount } from "@/services/GigCount"
 import { PrintPage } from "./_components/PrintPage"
 
 export const dynamic = "force-dynamic"
@@ -8,7 +9,7 @@ export const dynamic = "force-dynamic"
 export default async function PrintRoute() {
   await connectToDatabase()
   const raw = await ArtistModel.find({}).sort({ cardNumber: 1 }).lean()
-  const artists = JSON.parse(JSON.stringify(raw))
+  const artists = JSON.parse(JSON.stringify(await GigCount.attach(raw)))
 
   const skillDocs = await SpecialSkillModel.find({}).lean()
   const specialSkillsMap = Object.fromEntries(

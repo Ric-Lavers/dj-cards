@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/db/mongo/connect"
 import ArtistModel from "@/db/mongo/models/artist.schema"
 import SpecialSkillModel from "@/db/mongo/models/specialSkill.schema"
+import { GigCount } from "@/services/GigCount"
 import { FlipCard } from "./_components/FlipCard"
 import { SkillFlipCard } from "./_components/SkillFlipCard"
 import * as S from "./_components/flip-card.styles"
@@ -11,7 +12,7 @@ export const revalidate = 60
 export default async function CardsPage() {
   await connectToDatabase()
   const raw = await ArtistModel.find({}).sort({ cardNumber: 1 }).lean()
-  const artists = JSON.parse(JSON.stringify(raw))
+  const artists = JSON.parse(JSON.stringify(await GigCount.attach(raw)))
 
   const skillDocs = await SpecialSkillModel.find({}).sort({ order: 1, name: 1 }).lean()
   const specialSkills = JSON.parse(JSON.stringify(skillDocs)).map(
