@@ -87,6 +87,13 @@ export default function CreatePage() {
   }, [])
 
   useEffect(() => {
+    // Arriving from the roster app (?roster=<eventId>): stash the event in an
+    // httpOnly cookie server-side so /card/[id] can link them back to claim a slot.
+    const roster = new URLSearchParams(window.location.search).get("roster")
+    if (roster) api.post("/roster-return", { eventId: roster }).catch(() => {})
+  }, [])
+
+  useEffect(() => {
     const el = chipsRef.current
     if (!el) return
     const check = () => s_genresOverflow(el.scrollHeight > 80)
