@@ -23,7 +23,7 @@ export async function generateSpecialSkillIcon(name: string, prompt?: string, in
   const finalPrompt = SPECIAL_SKILL_ICON_PROMPT.replace("{NAME}", name).replace("{CONCEPT}", concept).replace("{ELEMENTS}", elements)
 
   const response = await client.images.generate({
-    model: "gpt-image-1",
+    model: "gpt-image-2.5-flare",
     prompt: finalPrompt,
     size: "1024x1024",
   })

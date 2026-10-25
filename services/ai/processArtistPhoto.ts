@@ -62,7 +62,7 @@ export async function processArtistPhoto(
   const file = new File([new Uint8Array(imageBuffer)], "photo.jpg", { type: mimeType })
 
   const response = await client.images.edit({
-    model: "gpt-image-1",
+    model: "gpt-image-2.5-sunburst",
     image: file,
     prompt,
     size: "1024x1024",

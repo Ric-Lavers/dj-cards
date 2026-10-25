@@ -17,7 +17,7 @@ Reference project for coding style: `/Users/riclavers/sites/personal/jambaroo-ha
 - **Next.js API routes** for backend (not Express — simpler than jambaroo for this scope)
 - **styled-components v6** for all styling
 - **SVG** for card generation (front + back templates)
-- **AI image pipeline** — OpenAI `gpt-image-1` (`services/ai/generateSpecialSkillIcon.ts`, `services/ai/processArtistPhoto.ts`) — text-to-image for special-skill icons, image-edit for pose-matched DJ portraits. `@imgly/background-removal` runs client-side for the "cutout" pose option.
+- **AI image pipeline** — OpenAI `gpt-image-2.5-sunburst` for portrait edits, `gpt-image-2.5-flare` for icon generation (`gpt-image-1` was shut down 2026-10-23; `services/ai/generateSpecialSkillIcon.ts`, `services/ai/processArtistPhoto.ts`) — text-to-image for special-skill icons, image-edit for pose-matched DJ portraits. `@imgly/background-removal` runs client-side for the "cutout" pose option.
 
 ---
 
