@@ -152,7 +152,8 @@ export const ArtistEditForm = ({ artist }: { artist: Artist }) => {
               <S.Label>{label}</S.Label>
               <S.Input
                 type="number"
-                value={value}
+                value={value || ""}
+                placeholder="0"
                 onChange={(e) => set(Number(e.target.value))}
                 onFocus={(e) => e.target.select()}
                 min={0}

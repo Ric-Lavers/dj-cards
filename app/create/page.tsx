@@ -423,7 +423,8 @@ export default function CreatePage() {
                   <S.Label>{label}</S.Label>
                   <S.Input
                     type="number"
-                    value={form[key]}
+                    value={form[key] || ""}
+                    placeholder="0"
                     onChange={(e) => handleField(key, Number(e.target.value))}
                     onFocus={(e) => e.target.select()}
                     min={0}
