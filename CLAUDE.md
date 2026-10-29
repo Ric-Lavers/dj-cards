@@ -113,7 +113,9 @@ app/
     _components/DownloadableCard.tsx
     page.tsx
     edit/
-      _components/ArtistEditForm.tsx
+      _components/ArtistEditForm.tsx, PhotoEditor.tsx  ← PhotoEditor re-runs the AI portrait
+                                    (new pose/prompt) from the saved original, current card
+                                    image, or a fresh upload; staged until "Save changes"
   special-skills/
     page.tsx, create/page.tsx
     [id]/_components/{SpecialSkillEditForm,ArtistSpread}.tsx, page.tsx

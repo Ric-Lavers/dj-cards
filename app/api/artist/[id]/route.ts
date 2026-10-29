@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { connectToDatabase } from "@/db/mongo/connect"
 import ArtistModel from "@/db/mongo/models/artist.schema"
+import { ensureBlobUrl } from "@/utils/uploadToBlob"
+import { POSE_VALUES } from "@/utils/poses"
+import { randomBytes } from "crypto"
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -38,6 +41,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       if (typeof s.instagram === "string") update["socials.instagram"] = s.instagram
       if (typeof s.soundcloud === "string") update["socials.soundcloud"] = s.soundcloud
     }
+
+    // New AI photo from the edit page arrives as a data: URL — push it to Blob
+    // under a fresh name (never overwrite the old file, it may be cached/printed).
+    if (typeof body.editedPhoto === "string" && body.editedPhoto) {
+      const uid = randomBytes(6).toString("hex")
+      update.editedPhoto = await ensureBlobUrl(body.editedPhoto, `edited/${uid}-edited.png`)
+      if (typeof body.photo === "string" && body.photo) {
+        update.photo = await ensureBlobUrl(body.photo, `original/${uid}-original.png`)
+      }
+    }
+    if (POSE_VALUES.includes(body.poseChoice)) update.poseChoice = body.poseChoice
+    if (typeof body.customPose === "string") update.customPose = body.customPose.trim()
 
     const artist = await ArtistModel.findByIdAndUpdate(id, update, { new: true }).lean()
     if (!artist) return NextResponse.json({ error: "Not found" }, { status: 404 })

@@ -6,6 +6,7 @@ import { AxiosError } from "axios"
 import * as S from "@/app/create/_components/create-page.styles"
 import api from "@/utils/api"
 import type { ArtistDoc, Skill } from "@/db/mongo/models/artist.schema"
+import { PhotoEditor, type PhotoChange } from "./PhotoEditor"
 
 const FALLBACK_GENRES = ["House", "Techno", "Drum & Bass", "Jungle", "Disco", "Electro", "Trance", "Ambient", "Hip-Hop", "Funk"]
 
@@ -36,6 +37,7 @@ export const ArtistEditForm = ({ artist }: { artist: Artist }) => {
   const [instagram, s_instagram] = useState(artist.socials?.instagram ?? "")
   const [soundcloud, s_soundcloud] = useState(artist.socials?.soundcloud ?? "")
   const [newSkill, s_newSkill] = useState("")
+  const [photoChange, s_photoChange] = useState<PhotoChange | null>(null)
 
   const [genreCatalog, s_genreCatalog] = useState<string[]>(FALLBACK_GENRES)
   const [specialSkillCatalog, s_specialSkillCatalog] = useState<SpecialSkillOption[]>([])
@@ -97,7 +99,9 @@ export const ArtistEditForm = ({ artist }: { artist: Artist }) => {
         specialSkills,
         stats: { yearsPlaying, tracksUploaded, totalFollowers, bpm, danceabilityScale },
         socials: { instagram, soundcloud },
+        ...photoChange,
       })
+      s_photoChange(null)
       s_saved(true)
       router.refresh()
     } catch (err) {
@@ -110,6 +114,9 @@ export const ArtistEditForm = ({ artist }: { artist: Artist }) => {
 
   return (
     <S.FormCol style={{ maxWidth: 560 }}>
+      {/* keyed on the saved image so it resets to "current" once a save lands */}
+      <PhotoEditor key={artist.editedPhoto} artist={artist} onChange={s_photoChange} />
+
       <S.Section>
         <S.Label>DJ Name</S.Label>
         <S.Input value={djName} onChange={(e) => s_djName(e.target.value)} required />

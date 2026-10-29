@@ -8,20 +8,10 @@ import * as S from "./_components/create-page.styles"
 import { CardFront, CardBack, FlipPreview } from "@/component-library"
 import api from "@/utils/api"
 import type { PoseChoice, Skill } from "@/db/mongo/models/artist.schema"
+import { POSES } from "@/utils/poses"
+import { prepareUpload } from "@/utils/resizeImage"
 
 type SpecialSkillOption = { _id: string; name: string; smallImage: string; largeImage: string }
-
-const POSES: { value: PoseChoice; label: string; emoji: string }[] = [
-  { value: "hands_in_air",  label: "Hands in the Air", emoji: "🙌" },
-  { value: "knob_twiddler", label: "Knob Twiddler",    emoji: "🎛️" },
-  { value: "headphone_grab",label: "Headphone Grab",   emoji: "🎧" },
-  { value: "fist_pump",     label: "Fist Pump",        emoji: "✊" },
-  { value: "the_lean",      label: "The Lean",         emoji: "🫦" },
-  { value: "eyes_closed",   label: "Eyes Closed",      emoji: "😌" },
-  { value: "natural",       label: "Natural",          emoji: "🪄" },
-  { value: "original",      label: "Original",         emoji: "📷" },
-  { value: "cutout",        label: "Cutout",           emoji: "✂️" },
-]
 
 const FALLBACK_GENRES = ["House", "Techno", "Drum & Bass", "Jungle", "Disco", "Electro", "Trance", "Ambient", "Hip-Hop", "Funk"]
 
@@ -187,41 +177,11 @@ export default function CreatePage() {
     }
   }
 
-  async function resizeImage(file: File): Promise<File> {
-    return new Promise((resolve, reject) => {
-      const img = new Image()
-      const url = URL.createObjectURL(file)
-      img.onload = () => {
-        URL.revokeObjectURL(url)
-        const MAX = 1500
-        let { width, height } = img
-        if (width > MAX || height > MAX) {
-          if (width > height) { height = Math.round(height * MAX / width); width = MAX }
-          else { width = Math.round(width * MAX / height); height = MAX }
-        }
-        const canvas = document.createElement("canvas")
-        canvas.width = width
-        canvas.height = height
-        canvas.getContext("2d")!.drawImage(img, 0, 0, width, height)
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return reject(new Error("Failed to resize image"))
-            resolve(new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" }))
-          },
-          "image/jpeg",
-          0.85
-        )
-      }
-      img.onerror = reject
-      img.src = url
-    })
-  }
-
   async function loadFile(file: File) {
     s_editedPhoto(null)
     s_photoError(null)
     try {
-      const ready = file.size > 4 * 1024 * 1024 ? await resizeImage(file) : file
+      const ready = await prepareUpload(file)
       s_photoFile(ready)
       const reader = new FileReader()
       reader.onload = (ev) => s_photoPreview(ev.target?.result as string)
